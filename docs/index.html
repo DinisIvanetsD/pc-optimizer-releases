@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PC Optimizer</title>
+<meta name="description" content="App grátis para Windows: descobre porque é que o PC está lento, crasha ou dá lag — e resolve. Free Windows app that finds out why your PC is slow, crashes or lags, and fixes it.">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1115;        /* fundo, igual à app */
+    --panel: #161920;
+    --raised: #1b1f27;
+    --line: #262b36;
+    --text: #e6e9ef;
+    --muted: #9aa3b2;
+    --signal: #4c8dff;     /* o azul da app */
+    --ok: #3fb950;
+    --warn: #e3b341;
+    --crit: #f85149;
+    --measure: 68ch;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--ink); color: var(--text);
+    font: 400 17px/1.6 "Onest", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  a { color: var(--signal); }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; border-radius: 6px; }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* língua: só se vê a escolhida */
+  html[lang="pt"] [lang="en"]:not(html), html[lang="en"] [lang="pt"]:not(html) { display: none !important; }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+  .brand svg { width: 34px; height: 34px; }
+  .langs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .langs button { font: 500 14px "Onest", sans-serif; color: var(--muted); background: none; border: 0; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .langs button[aria-pressed="true"] { background: var(--raised); color: var(--text); }
+
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; padding: 56px 0 88px; }
+  h1 { font-size: clamp(38px, 5.4vw, 64px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 800; margin: 0 0 22px; max-width: 14ch; }
+  .lede { font-size: 20px; color: #c3c9d4; max-width: 46ch; margin: 0 0 32px; }
+  .get { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+    background: var(--signal); color: #fff; font-weight: 700; font-size: 17px;
+    padding: 15px 26px; border-radius: 12px; box-shadow: 0 2px 0 rgba(0,0,0,.35);
+  }
+  .btn:hover { background: #6a9fff; }
+  .btn svg { width: 20px; height: 20px; }
+  .fine { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+  /* o traçado: o momento da página */
+  .trace { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 26px 26px 22px; }
+  .trace-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+  .trace-head b { font-weight: 700; }
+  .trace-head span { color: var(--muted); font-size: 14px; }
+  .hops { list-style: none; margin: 0; padding: 0; position: relative; }
+  .hops::before { content: ""; position: absolute; left: 11px; top: 14px; bottom: 14px; width: 2px; background: var(--line); }
+  .hop { display: grid; grid-template-columns: 24px 1fr auto; gap: 14px; align-items: center; padding: 9px 0; position: relative; }
+  .dot { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); border: 2px solid var(--line); display: grid; place-items: center; z-index: 1; transition: border-color .3s, background .3s; }
+  .dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background .3s; }
+  .where { font-weight: 500; }
+  .where small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
+  .ms { font-weight: 700; font-size: 18px; color: var(--muted); transition: color .3s; }
+  .hop.on .dot { border-color: var(--ok); }
+  .hop.on .dot::after { background: var(--ok); }
+  .hop.on .ms { color: var(--text); }
+  .verdict { margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: #142a1c; border: 1px solid #234a30; opacity: 0; transform: translateY(6px); transition: opacity .5s, transform .5s; }
+  .verdict.on { opacity: 1; transform: none; }
+  .verdict b { color: var(--ok); }
+  .verdict p { margin: 4px 0 0; color: #b9d8c1; font-size: 15px; }
+
+  /* ---------- o que faz ---------- */
+  section { padding: 72px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -0.02em; font-weight: 800; margin: 0 0 14px; max-width: 22ch; }
+  .intro { color: #c3c9d4; max-width: var(--measure); margin: 0 0 44px; }
+  .feature { display: grid; grid-template-columns: 0.9fr 1.4fr; gap: 48px; align-items: center; margin: 0 0 76px; }
+  .feature:nth-of-type(even) { grid-template-columns: 1.4fr 0.9fr; }
+  .feature:nth-of-type(even) .shot { order: -1; }
+  .feature h3 { font-size: 24px; letter-spacing: -0.01em; margin: 0 0 10px; }
+  .feature p { color: #c3c9d4; margin: 0 0 12px; max-width: 46ch; }
+  .feature ul { margin: 0; padding-left: 20px; color: #c3c9d4; max-width: 46ch; }
+  .feature li { margin: 4px 0; }
+  .shot { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 24px 48px -28px rgba(0,0,0,.7); background: var(--panel); }
+  .float { position: relative; }
+  .float .mini { position: absolute; border-radius: 10px; box-shadow: 0 20px 40px -14px rgba(0,0,0,.9); }
+  .float .prompt { width: 44%; right: -14px; bottom: -26px; border: 1px solid #2c3d63; }
+  .float .ov { width: 32%; left: 18px; top: 18px; border-radius: 8px; }
+
+  .others { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .others div { background: var(--panel); padding: 22px 22px 24px; }
+  .others h3 { font-size: 17px; margin: 0 0 6px; }
+  .others p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* ---------- aviso do Windows ---------- */
+  .smart { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 0 0 22px; }
+  ol.steps li::before { content: counter(s); width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--signal); color: var(--signal); font-weight: 700; display: grid; place-items: center; }
+  ol.steps b { display: block; }
+  ol.steps span { color: var(--muted); font-size: 15px; }
+  .why { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; color: #c3c9d4; }
+  .why p { margin: 0 0 12px; }
+  .why p:last-child { margin: 0; }
+
+  .req { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 12px 48px; margin: 0; }
+  .req dt { color: var(--muted); font-size: 14px; }
+  .req dd { margin: 0; font-weight: 500; }
+
+  footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+  @media (max-width: 900px) {
+    .hero, .feature, .feature:nth-of-type(even), .smart { grid-template-columns: 1fr; gap: 32px; }
+    .feature:nth-of-type(even) .shot { order: 0; }
+    .others { grid-template-columns: 1fr; }
+    .req { grid-template-columns: 1fr; }
+    .float .prompt { right: 8px; bottom: -18px; width: 56%; }
+    .hero { padding: 24px 0 64px; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 0 16px; }
+    .lede { font-size: 18px; }
+    .float .ov { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dot, .dot::after, .ms, .verdict { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./">
+      <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#4c8dff"/><path d="M19 5 9 19h7l-2 10 10-14h-7l2-10z" fill="#fff"/></svg>
+      PC Optimizer
+    </a>
+    <div class="langs" role="group" aria-label="Língua / Language">
+      <button type="button" data-lang="pt" aria-pressed="true">PT</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1><span lang="pt">Porque é que o teu PC está lento, crasha ou dá lag?</span><span lang="en">Why is your PC slow, crashing or lagging?</span></h1>
+        <p class="lede">
+          <span lang="pt">O PC Optimizer descobre a causa e explica-a em linguagem simples: ecrãs azuis, RAM instável, drivers velhos, disco cheio, o Wi-Fi ou o teu operador. Depois resolve, e tudo o que muda pode ser desfeito.</span>
+          <span lang="en">PC Optimizer finds the cause and explains it in plain words: blue screens, unstable RAM, old drivers, a full disk, your Wi-Fi or your provider. Then it fixes it, and everything it changes can be undone.</span>
+        </p>
+        <div class="get">
+          <a class="btn" id="download" href="https://github.com/DinisIvanetsD/pc-optimizer-releases/releases/latest/download/PCOptimizer-win-x64.zip">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v11m0 0-4-4m4 4 4-4M3 15v2h14v-2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span lang="pt">Descarregar para Windows</span><span lang="en">Download for Windows</span>
+          </a>
+          <p class="fine">
+            <span lang="pt">Grátis · Windows 10 e 11 (64 bits) · <span class="ver">versão mais recente</span></span>
+            <span lang="en">Free · Windows 10 and 11 (64-bit) · <span class="ver">latest version</span></span>
+          </p>
+        </div>
+      </div>
+
+      <figure class="trace" aria-label="Onde está o lag? / Where's the lag?" style="margin:0">
+        <div class="trace-head">
+          <b><span lang="pt">Onde está o lag?</span><span lang="en">Where's the lag?</span></b>
+          <span lang="pt">até ao servidor do jogo</span><span lang="en">to the game server</span>
+        </div>
+        <ol class="hops">
+          <li class="hop"><i class="dot"></i><span class="where"><span lang="pt">Casa</span><span lang="en">Home</span><small><span lang="pt">o teu router</span><span lang="en">your router</span></small></span><span class="ms">1 ms</span></li>
+          <li class="hop"><i class="dot"></i><span class="where"><span lang="pt">Operador</span><span lang="en">Provider</span><small><span lang="pt">a rede do teu fornecedor de internet</span><span lang="en">your internet provider's network</span></small></span><span class="ms">9 ms</span></li>
+          <li class="hop"><i class="dot"></i><span class="where">Internet<small><span lang="pt">o caminho pelo meio</span><span lang="en">the path in between</span></small></span><span class="ms">21 ms</span></li>
+          <li class="hop"><i class="dot"></i><span class="where"><span lang="pt">Servidor</span><span lang="en">Server</span><small><span lang="pt">o jogo</span><span lang="en">the game</span></small></span><span class="ms">24 ms</span></li>
+        </ol>
+        <div class="verdict">
+          <b><span lang="pt">Caminho limpo</span><span lang="en">Clean path</span></b>
+          <p><span lang="pt">Sem perda de pacotes nem saltos de atraso. Se sentes lag, é o servidor do jogo.</span><span lang="en">No packet loss and no delay jumps. If you feel lag, it's the game server.</span></p>
+        </div>
+      </figure>
+    </div>
+
+    <section>
+      <h2><span lang="pt">O que faz</span><span lang="en">What it does</span></h2>
+      <p class="intro">
+        <span lang="pt">Não é um "limpador" que promete milagres. Lê o que o Windows já sabe (relatórios de crash, Gestor de Dispositivos, eventos de rede), mede o que falta e diz-te o que fazer primeiro.</span>
+        <span lang="en">It's not a "cleaner" that promises miracles. It reads what Windows already knows (crash reports, Device Manager, network events), measures what's missing and tells you what to do first.</span>
+      </p>
+
+      <div class="feature">
+        <div>
+          <h3><span lang="pt">Modo jogo</span><span lang="en">Game mode</span></h3>
+          <p><span lang="pt">Quando abres um jogo online, a app deteta-o, descobre o servidor a que estás ligado e mostra o ping, a perda de pacotes e o jitter ao vivo, também por cima do jogo.</span><span lang="en">When you open an online game, the app detects it, finds the server you're connected to and shows ping, packet loss and jitter live, also on top of the game.</span></p>
+          <ul>
+            <li><span lang="pt">Otimiza só enquanto jogas e repõe tudo no fim.</span><span lang="en">Optimizes only while you play and restores everything afterwards.</span></li>
+            <li><span lang="pt">O overlay é uma janela à parte: não injeta nada no jogo nem mexe com anti-cheats.</span><span lang="en">The overlay is a separate window: it injects nothing into the game and doesn't touch anti-cheats.</span></li>
+            <li><span lang="pt">35 jogos reconhecidos, e acrescentas os teus.</span><span lang="en">35 games recognized, and you can add your own.</span></li>
+          </ul>
+        </div>
+        <div class="float">
+          <img class="shot" data-src-pt="img/network-pt.png" data-src-en="img/network-en.png" src="img/network-pt.png" alt="" width="1264" height="801" loading="lazy">
+          <img class="mini ov" src="img/overlay.png" alt="" loading="lazy">
+          <img class="mini prompt" data-src-pt="img/prompt-pt.png" data-src-en="img/prompt-en.png" src="img/prompt-pt.png" alt="" loading="lazy">
+        </div>
+      </div>
+
+      <div class="feature">
+        <div>
+          <h3><span lang="pt">Ecrãs azuis explicados</span><span lang="en">Blue screens explained</span></h3>
+          <p><span lang="pt">Lê os relatórios de crash que o Windows guarda e diz se o culpado é um driver concreto ou a memória RAM. Se for a RAM, testa-a sem reiniciar e guia-te na BIOS, passo a passo, para a tua motherboard.</span><span lang="en">Reads the crash reports Windows keeps and tells you whether the culprit is a specific driver or the RAM. If it's the RAM, it tests it without restarting and guides you through the BIOS, step by step, for your motherboard.</span></p>
+        </div>
+        <img class="shot" data-src-pt="img/diag-pt.png" data-src-en="img/diag-en.png" src="img/diag-pt.png" alt="" width="1264" height="801" loading="lazy">
+      </div>
+
+      <div class="feature">
+        <div>
+          <h3><span lang="pt">Drivers das fontes oficiais</span><span lang="en">Drivers from official sources</span></h3>
+          <p><span lang="pt">Encontra drivers em falta, com erro ou antigos e instala a versão nova da NVIDIA, da AMD ou do Catálogo do Microsoft Update. Verifica a assinatura digital do fabricante antes de instalar e cria um ponto de restauro.</span><span lang="en">Finds missing, faulty or old drivers and installs the new version from NVIDIA, AMD or the Microsoft Update Catalog. It checks the manufacturer's digital signature before installing and creates a restore point.</span></p>
+        </div>
+        <img class="shot" data-src-pt="img/drivers-pt.png" data-src-en="img/drivers-en.png" src="img/drivers-pt.png" alt="" width="1264" height="801" loading="lazy">
+      </div>
+
+      <div class="others">
+        <div>
+          <h3><span lang="pt">Espaço em disco</span><span lang="en">Disk space</span></h3>
+          <p><span lang="pt">Mostra o que ocupa espaço e diz, pasta a pasta, se é seguro apagar. O que é do Windows fica bloqueado.</span><span lang="en">Shows what takes up space and says, folder by folder, whether it's safe to delete. Windows' own folders stay locked.</span></p>
+        </div>
+        <div>
+          <h3><span lang="pt">Tudo se desfaz</span><span lang="en">Everything can be undone</span></h3>
+          <p><span lang="pt">Cada alteração fica no Histórico com um botão para desfazer. Pastas apagadas vão para a Reciclagem.</span><span lang="en">Every change goes into History with an undo button. Deleted folders go to the Recycle Bin.</span></p>
+        </div>
+        <div>
+          <h3><span lang="pt">Modo simulação</span><span lang="en">Simulation mode</span></h3>
+          <p><span lang="pt">Experimenta tudo sem mudar nada: os botões só mostram o que fariam.</span><span lang="en">Try everything without changing anything: the buttons only show what they would do.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span lang="pt">"O Windows protegeu o computador"</span><span lang="en">"Windows protected your PC"</span></h2>
+      <div class="smart">
+        <div>
+          <p class="intro" style="margin-bottom:28px">
+            <span lang="pt">Na primeira vez que abres a app, o Windows pode mostrar este aviso. Para continuar:</span>
+            <span lang="en">The first time you open the app, Windows may show this warning. To continue:</span>
+          </p>
+          <ol class="steps">
+            <li><div><b><span lang="pt">Extrai o ZIP</span><span lang="en">Extract the ZIP</span></b><span><span lang="pt">Botão direito › Extrair tudo. Fica uma pasta "PC Optimizer".</span><span lang="en">Right-click › Extract All. You get a "PC Optimizer" folder.</span></span></div></li>
+            <li><div><b><span lang="pt">Abre o PCOptimizer.exe</span><span lang="en">Open PCOptimizer.exe</span></b><span><span lang="pt">Se aparecer o aviso azul, clica em "Mais informações".</span><span lang="en">If the blue warning appears, click "More info".</span></span></div></li>
+            <li><div><b><span lang="pt">Clica em "Executar mesmo assim"</span><span lang="en">Click "Run anyway"</span></b><span><span lang="pt">Só é preciso da primeira vez.</span><span lang="en">You only need to do this the first time.</span></span></div></li>
+            <li><div><b><span lang="pt">Instala no PC (opcional)</span><span lang="en">Install on the PC (optional)</span></b><span><span lang="pt">Em Definições › Instalar no PC fica no Menu Iniciar e atualiza-se sozinha.</span><span lang="en">In Settings › Install on the PC it goes into the Start menu and updates itself.</span></span></div></li>
+          </ol>
+        </div>
+        <div class="why">
+          <p><b><span lang="pt">Porque aparece?</span><span lang="en">Why does it appear?</span></b></p>
+          <p><span lang="pt">O Windows avisa em programas novos que ainda não têm uma assinatura digital paga. O aviso vai desaparecendo à medida que mais pessoas usam a app.</span><span lang="en">Windows warns about new programs that don't have a paid digital signature yet. The warning fades as more people use the app.</span></p>
+          <p><span lang="pt">A app não precisa de administrador para ver o PC. Pede-o só quando vais aplicar alguma coisa, e diz sempre o que vai fazer antes.</span><span lang="en">The app doesn't need administrator to look at your PC. It only asks when you're about to apply something, and always says what it will do first.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span lang="pt">Requisitos</span><span lang="en">Requirements</span></h2>
+      <dl class="req">
+        <div><dt><span lang="pt">Sistema</span><span lang="en">System</span></dt><dd>Windows 10 / 11, 64 bits</dd></div>
+        <div><dt><span lang="pt">Espaço</span><span lang="en">Space</span></dt><dd>~200 MB</dd></div>
+        <div><dt><span lang="pt">Línguas</span><span lang="en">Languages</span></dt><dd>Português, English</dd></div>
+      </dl>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>PC Optimizer</span>
+    <span><a href="https://github.com/DinisIvanetsD/pc-optimizer-releases/releases"><span lang="pt">Todas as versões e novidades</span><span lang="en">All versions and release notes</span></a></span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    function setLang(l) {
+      root.lang = l;
+      document.querySelectorAll('[data-lang]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === l)); });
+      document.querySelectorAll('img[data-src-' + l + ']').forEach(function (img) { img.src = img.getAttribute('data-src-' + l); });
+      try { localStorage.setItem('lang', l); } catch (e) {}
+    }
+    var saved = null;
+    try { saved = localStorage.getItem('lang'); } catch (e) {}
+    setLang(saved || ((navigator.language || 'en').toLowerCase().indexOf('pt') === 0 ? 'pt' : 'en'));
+    document.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
+
+    // o único movimento da página: o caminho acende salto a salto
+    var hops = document.querySelectorAll('.hop'), verdict = document.querySelector('.verdict');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    hops.forEach(function (h, i) { setTimeout(function () { h.classList.add('on'); }, reduce ? 0 : 450 + i * 420); });
+    setTimeout(function () { verdict.classList.add('on'); }, reduce ? 0 : 450 + hops.length * 420 + 200);
+
+    // versão mais recente (se a API do GitHub responder)
+    fetch('https://api.github.com/repos/DinisIvanetsD/pc-optimizer-releases/releases/latest')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, '');
+        document.querySelectorAll('.ver').forEach(function (s) { s.textContent = (root.lang === 'pt' && s.closest('[lang="pt"]') ? 'versão ' : 'version ') + v; });
+      }).catch(function () {});
+  })();
+</script>
+</body>
+</html>
