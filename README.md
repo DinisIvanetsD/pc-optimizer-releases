@@ -50,7 +50,7 @@ Em **português** e **inglês**. Sem anúncios, sem conta, sem enviar os teus da
 - **Drivers**: missing or outdated drivers from official sources (NVIDIA, AMD, Microsoft).
 - **RAM test** without restarting, and a **History** of every change with Undo.
 
-**Install:** download the ZIP, extract it and open `PCOptimizer.exe`. If Windows shows the blue SmartScreen warning, click **More info › Run anyway** (the app isn't code-signed yet). Then use **Settings › Install on PC** to add it to the Start menu with automatic updates.
+**Install:** download the ZIP, extract it and open `PCOptimizer.exe`. If Windows shows the blue SmartScreen warning, click **More info › Run anyway** (the app isn't code-signed yet). Then use **Settings › Install on the PC** to add it to the Start menu with automatic updates.
 
 </details>
 
