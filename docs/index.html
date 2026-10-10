@@ -160,7 +160,7 @@
           <span lang="en">Rigwise finds the cause and explains it in plain words: blue screens, unstable RAM, old drivers, a full disk, your Wi-Fi or your provider. Then it fixes it, and everything it changes can be undone.</span>
         </p>
         <div class="get">
-          <a class="btn" id="download" href="https://github.com/DinisIvanetsD/pc-optimizer-releases/releases/latest/download/PCOptimizer-win-x64.zip">
+          <a class="btn" id="download" href="https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v11m0 0-4-4m4 4 4-4M3 15v2h14v-2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span lang="pt">Descarregar para Windows</span><span lang="en">Download for Windows</span>
           </a>
@@ -282,7 +282,7 @@
 <footer>
   <div class="wrap">
     <span>Rigwise</span>
-    <span><a href="https://github.com/DinisIvanetsD/pc-optimizer-releases/releases"><span lang="pt">Todas as versões e novidades</span><span lang="en">All versions and release notes</span></a></span>
+    <span><a href="https://github.com/DinisIvanetsD/rigwise/releases"><span lang="pt">Todas as versões e novidades</span><span lang="en">All versions and release notes</span></a></span>
   </div>
 </footer>
 
@@ -307,7 +307,7 @@
     setTimeout(function () { verdict.classList.add('on'); }, reduce ? 0 : 450 + hops.length * 420 + 200);
 
     // versão mais recente (se a API do GitHub responder)
-    fetch('https://api.github.com/repos/DinisIvanetsD/pc-optimizer-releases/releases/latest')
+    fetch('https://api.github.com/repos/DinisIvanetsD/rigwise/releases/latest')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
         if (!j || !j.tag_name) return;

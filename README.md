@@ -6,12 +6,12 @@
 
 **Finds out why your PC is slow, crashes or lags — and fixes it.**
 
-[![Latest release](https://img.shields.io/github/v/release/DinisIvanetsD/pc-optimizer-releases?label=version&color=8b5cf6)](https://github.com/DinisIvanetsD/pc-optimizer-releases/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/DinisIvanetsD/pc-optimizer-releases/total?color=8b5cf6)](https://github.com/DinisIvanetsD/pc-optimizer-releases/releases)
+[![Latest release](https://img.shields.io/github/v/release/DinisIvanetsD/rigwise?label=version&color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/DinisIvanetsD/rigwise/total?color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-8b5cf6)
 ![Free](https://img.shields.io/badge/price-free-3fb950)
 
-### [⬇ Download](https://github.com/DinisIvanetsD/pc-optimizer-releases/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://dinisivanetsd.github.io/pc-optimizer-releases/)
+### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://dinisivanetsd.github.io/rigwise/)
 
 <img src="docs/img/diag-en.png" width="820" alt="Rigwise diagnostics">
 
@@ -33,7 +33,7 @@ In **English** and **Portuguese**. No ads, no account, none of your data sent an
 
 ## Install
 
-1. [Download the ZIP](https://github.com/DinisIvanetsD/pc-optimizer-releases/releases/latest/download/PCOptimizer-win-x64.zip) and extract it (right-click › Extract All).
+1. [Download the ZIP](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) and extract it (right-click › Extract All).
 2. Open `PCOptimizer.exe`. If Windows shows the blue SmartScreen warning, click **More info › Run anyway** (the app isn't code-signed yet).
 3. Go to **Settings › Install on the PC** to add it to the Start menu. It then updates itself.
 
