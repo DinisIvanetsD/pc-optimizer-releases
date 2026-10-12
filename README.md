@@ -10,6 +10,7 @@
 [![Downloads](https://img.shields.io/github/downloads/DinisIvanetsD/rigwise/total?color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-8b5cf6)
 ![Free](https://img.shields.io/badge/price-free-3fb950)
+[![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6)](LICENSE)
 
 ### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://rigwise-vercel.vercel.app)
 

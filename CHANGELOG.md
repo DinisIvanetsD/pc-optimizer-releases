@@ -1,5 +1,9 @@
 ﻿# Novidades
 
+## 0.9.3
+- Corrige um erro ao abrir a janela pelo ícone da barra de tarefas depois de ela ter fechado.
+- Código-fonte público em github.com/DinisIvanetsD/rigwise, com licença MIT.
+
 ## 0.9.2
 - **Ecrãs azuis** (Diagnóstico): o título diz a hora do crash ("hoje às 19:02") e o código com uma explicação
   (ex.: PFN_LIST_CORRUPT = quase sempre RAM instável). Aviso na hora, logo que o PC volta a arrancar.
