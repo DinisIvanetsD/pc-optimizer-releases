@@ -1,0 +1,48 @@
+name: Compilar e testar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Compilar
+        run: dotnet build PCOptimizer.sln -c Release
+
+      - name: Testes
+        run: dotnet test tests/PCOptimizer.Tests -c Release --no-build --logger "trx;LogFileName=testes.trx"
+
+      - name: Publicar a app (ZIP)
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          # igual ao build/publish.ps1: com o .NET incluído, lista de ficheiros e pasta própria no ZIP
+          $app = "publish/PC Optimizer"
+          dotnet publish src/PCOptimizer.App -c Release -r win-x64 --self-contained true -o $app
+          $full = (Resolve-Path $app).Path
+          Get-ChildItem $app -Recurse -File -Exclude *.pdb | ForEach-Object { $_.FullName.Substring($full.Length + 1) } | Set-Content "$app/files.txt" -Encoding utf8
+          Get-ChildItem $app -Recurse -Filter *.pdb | Remove-Item
+          Compress-Archive -Path $app -DestinationPath publish/PCOptimizer-win-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: PCOptimizer-win-x64
+          path: publish/PCOptimizer-win-x64.zip
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultados-dos-testes
+          path: tests/PCOptimizer.Tests/TestResults/*.trx
