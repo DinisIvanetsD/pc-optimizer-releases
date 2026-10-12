@@ -4,14 +4,14 @@
 
 # Rigwise
 
-**Finds out why your PC is slow, crashes or lags — and fixes it.**
+**Finds out why your PC is slow, crashes or lags, and fixes it.**
 
 [![Latest release](https://img.shields.io/github/v/release/DinisIvanetsD/rigwise?label=version&color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/DinisIvanetsD/rigwise/total?color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-8b5cf6)
 ![Free](https://img.shields.io/badge/price-free-3fb950)
 
-### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://rigwise-vercel.vercel.app) · [Mirror](https://dinisivanetsd.github.io/rigwise/)
+### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://rigwise-vercel.vercel.app)
 
 <img src="docs/img/diag-en.png" width="820" alt="Rigwise diagnostics">
 
@@ -42,7 +42,7 @@ In **English** and **Portuguese**. No ads, no account, none of your data sent an
 <details>
 <summary><b>Português</b></summary>
 
-**Descobre porque é que o PC está lento, crasha ou dá lag — e resolve.**
+**Descobre porque é que o PC está lento, crasha ou dá lag, e resolve.**
 
 - **Diagnóstico**: ecrãs azuis, RAM instável, discos, drivers e rede, explicados em linguagem simples, com um botão para resolver.
 - **Otimização**: perfis para jogos, rede, vídeo, música, trabalho e privacidade. Cada ajuste pode ser desfeito.
