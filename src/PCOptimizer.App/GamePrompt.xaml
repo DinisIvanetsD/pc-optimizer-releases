@@ -1,0 +1,19 @@
+﻿<Window x:Class="PCOptimizer.App.GamePrompt"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Rigwise" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ShowActivated="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+  <Border Background="{StaticResource CardBrush}" BorderBrush="#3B2A63" BorderThickness="1" CornerRadius="10" Padding="16,14" Width="380">
+    <StackPanel>
+      <TextBlock x:Name="HeaderText" Text="🎮  Jogo detetado" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" FontSize="15"/>
+      <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,12"
+                 Text="Otimizar o PC enquanto jogas? Prioridade de rede para o jogo, energia no máximo e downloads do sistema em pausa. Tudo volta ao normal quando fechas o jogo."/>
+      <WrapPanel>
+        <Button Content="⚡ Otimizar" Click="Optimize_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,6"/>
+        <Button Content="Sempre para este jogo" Click="Always_Click" Margin="0,0,6,6"/>
+        <Button Content="Agora não" Click="NotNow_Click" Margin="0,0,6,6"/>
+        <Button Content="Nunca" Click="Never_Click" Margin="0,0,0,6" ToolTip="Nunca perguntar para este jogo"/>
+      </WrapPanel>
+    </StackPanel>
+  </Border>
+</Window>

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <AssemblyName>PCOptimizer</AssemblyName>
+    <RootNamespace>PCOptimizer.App</RootNamespace>
+    <Product>Rigwise</Product>
+    <Version>0.9.2</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+    <Resource Include="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- usamos WinForms só para o ícone na barra de tarefas; evitar conflitos de nomes com o WPF -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PCOptimizer.Core\PCOptimizer.Core.csproj" />
+  </ItemGroup>
+
+</Project>

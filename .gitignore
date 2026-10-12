@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+*.user
+
+# gerados localmente
+*.log
+/publish/
+/screenshots/
+
+
+# ficheiros de trabalho da tradução (as traduções ficam em src/PCOptimizer.Core/Util/en.json)
+/build/i18n/
+/build/i18n-*.json
+/build/i18n-*.txt
+/build/*.log

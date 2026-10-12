@@ -11,7 +11,7 @@
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-8b5cf6)
 ![Free](https://img.shields.io/badge/price-free-3fb950)
 
-### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://dinisivanetsd.github.io/rigwise/)
+### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://rigwise-vercel.vercel.app) · [Mirror](https://dinisivanetsd.github.io/rigwise/)
 
 <img src="docs/img/diag-en.png" width="820" alt="Rigwise diagnostics">
 
@@ -56,3 +56,11 @@ In **English** and **Portuguese**. No ads, no account, none of your data sent an
 </details>
 
 <sub>This repository only hosts the releases; the source code is private.</sub>
+
+## Build from source
+
+The source code is in this repository (C# / .NET 8 / WPF). See [DEVELOPMENT.md](DEVELOPMENT.md) for how to build and run it.
+
+```bash
+dotnet run --project src/PCOptimizer.App
+```
