@@ -37,6 +37,27 @@ public class GamingTests
         Assert.Equal("Roblox", GameCatalog.Choose(running, foregroundPid: 1, pid => started[pid])!.Game.Name);             // o que está à frente
     }
 
+    [Theory]
+    [InlineData("eldenring", true, true)]
+    [InlineData("chrome", true, false)]         // vídeo em ecrã inteiro no browser
+    [InlineData("vlc", true, false)]
+    [InlineData("explorer", true, false)]
+    [InlineData("PCOptimizer", true, false)]
+    [InlineData("eldenring", false, false)]     // em janela: não conta
+    public void Qualquer_jogo_em_ecra_inteiro(string process, bool covers, bool expected) =>
+        Assert.Equal(expected, GameCatalog.IsCandidate(process, covers));
+
+    [Fact]
+    public void Alt_Tab_nao_acaba_a_sessao_de_um_jogo_detetado()
+    {
+        var detected = new RunningGame(new GameInfo("eldenring", "eldenring.exe"), 7, null, Detected: true);
+        var known = new RunningGame(GameCatalog.Known[0], 9, null);
+        Assert.Same(detected, GameCatalog.Pick(null, foreground: null, current: detected, alive: _ => true));
+        Assert.Null(GameCatalog.Pick(null, null, detected, alive: _ => false));                // o jogo fechou
+        Assert.Same(known, GameCatalog.Pick(known, null, detected, _ => true));                 // um jogo conhecido ganha
+        Assert.Same(detected, GameCatalog.Pick(null, detected, null, _ => true));               // novo em primeiro plano
+    }
+
     // ---- servidor do jogo
 
     [Theory]

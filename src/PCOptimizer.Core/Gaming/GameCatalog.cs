@@ -7,8 +7,8 @@ namespace PCOptimizer.Core.Gaming;
 /// <summary>Um jogo online conhecido (ou acrescentado pelo utilizador), identificado pelo executável.</summary>
 public sealed record GameInfo(string Name, string Exe);
 
-/// <summary>Um jogo que está a correr agora.</summary>
-public sealed record RunningGame(GameInfo Game, int Pid, string? Path);
+/// <summary>Um jogo que está a correr agora. Detected = não é um jogo da lista: apanhado por ocupar o ecrã inteiro.</summary>
+public sealed record RunningGame(GameInfo Game, int Pid, string? Path, bool Detected = false);
 
 /// <summary>
 /// Os jogos online mais jogados no PC, pelo nome do executável do jogo propriamente dito
@@ -89,8 +89,33 @@ public static class GameCatalog
     public static RunningGame? Choose(IReadOnlyList<RunningGame> running, int foregroundPid, Func<int, DateTime> started) =>
         running.FirstOrDefault(g => g.Pid == foregroundPid) ?? running.MaxBy(g => started(g.Pid));
 
-    /// <summary>O jogo aberto agora (null = nenhum).</summary>
-    public static RunningGame? FindRunning(AppSettings s)
+    /// <summary>Programas que ocupam o ecrã todo mas não são jogos (browsers, leitores de vídeo, Office, o próprio sistema).</summary>
+    public static readonly IReadOnlySet<string> NotGames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "chrome", "msedge", "firefox", "brave", "opera", "vivaldi", "explorer",
+        "vlc", "mpc-hc64", "mpc-be64", "PotPlayerMini64", "wmplayer", "Video.UI", "Microsoft.Media.Player", "mpv",
+        "WINWORD", "EXCEL", "POWERPNT", "Acrobat", "AcroRd32", "PCOptimizer", "obs64", "Discord", "Spotify",
+        "ApplicationFrameHost", "LockApp", "SearchHost", "StartMenuExperienceHost", "ShellExperienceHost", "TextInputHost",
+    };
+
+    /// <summary>Um programa em primeiro plano que ocupa o monitor todo e não é um dos de <see cref="NotGames"/>.</summary>
+    public static bool IsCandidate(string processName, bool coversMonitor) => coversMonitor && !NotGames.Contains(processName);
+
+    /// <summary>
+    /// Um jogo conhecido ganha sempre. Um jogo detetado por ecrã inteiro fica até o processo fechar
+    /// (o Alt+Tab não o acaba); só então conta o que está agora em primeiro plano.
+    /// </summary>
+    public static RunningGame? Pick(RunningGame? known, RunningGame? foreground, RunningGame? current, Func<int, bool> alive) =>
+        known ?? (current is { Detected: true } && alive(current.Pid) ? current : null) ?? foreground;
+
+    /// <summary>O jogo aberto agora (null = nenhum). <paramref name="current"/> é o que já se sabia, para o Alt+Tab não o perder.</summary>
+    public static RunningGame? FindRunning(AppSettings s, RunningGame? current = null)
+    {
+        var known = FindKnown(s);
+        return Pick(known, known is null ? FindForeground() : null, current, Alive);
+    }
+
+    static RunningGame? FindKnown(AppSettings s)
     {
         var list = new List<(int, string, string?)>();
         foreach (var p in Process.GetProcesses())
@@ -108,6 +133,42 @@ public static class GameCatalog
         catch { return found; }
     }
 
+    /// <summary>O programa em primeiro plano, se ocupar o monitor todo (jogo em ecrã inteiro ou sem bordas).</summary>
+    static RunningGame? FindForeground()
+    {
+        try
+        {
+            var hwnd = GetForegroundWindow();
+            if (hwnd == IntPtr.Zero || GetWindowThreadProcessId(hwnd, out var pid) == 0) return null;
+            using var p = Process.GetProcessById((int)pid);
+            var name = p.ProcessName;
+            if (!IsCandidate(name, CoversMonitor(hwnd))) return null;
+            string? path = null;
+            try { path = p.MainModule?.FileName; } catch { } // processos protegidos não deixam ler o caminho
+            return new RunningGame(new GameInfo(name, name + ".exe"), p.Id, path, Detected: true);
+        }
+        catch { return null; }
+    }
+
+    static bool CoversMonitor(IntPtr hwnd)
+    {
+        var mi = new MonitorInfo { Size = System.Runtime.InteropServices.Marshal.SizeOf<MonitorInfo>() };
+        if (!GetWindowRect(hwnd, out var w) || !GetMonitorInfo(MonitorFromWindow(hwnd, 2), ref mi)) return false; // 2 = o monitor mais próximo
+        var m = mi.Monitor;
+        return w.Left <= m.Left && w.Top <= m.Top && w.Right >= m.Right && w.Bottom >= m.Bottom;
+    }
+
+    static bool Alive(int pid)
+    {
+        try
+        {
+            using var p = Process.GetProcessById(pid);
+            return !p.HasExited;
+        }
+        catch (ArgumentException) { return false; } // já não existe
+        catch { return true; }                       // existe, mas não deixa ler o estado (processo protegido)
+    }
+
     static DateTime StartTime(int pid)
     {
         try
@@ -120,4 +181,10 @@ public static class GameCatalog
 
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
+
+    struct Rect { public int Left, Top, Right, Bottom; }
+    struct MonitorInfo { public int Size; public Rect Monitor, Work; public uint Flags; }
 }

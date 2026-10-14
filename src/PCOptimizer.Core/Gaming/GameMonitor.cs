@@ -2,7 +2,7 @@ using PCOptimizer.Core.Settings;
 
 namespace PCOptimizer.Core.Gaming;
 
-/// <summary>Vê de 3 em 3 segundos se abriu ou fechou um jogo conhecido. Só lê a lista de processos.</summary>
+/// <summary>Vê de 3 em 3 segundos se abriu ou fechou um jogo (conhecido ou em ecrã inteiro). Só lê processos e a janela da frente.</summary>
 public sealed class GameMonitor : IDisposable
 {
     readonly Func<AppSettings> _settings;
@@ -29,7 +29,7 @@ public sealed class GameMonitor : IDisposable
         if (Interlocked.Exchange(ref _busy, 1) == 1) return;
         try
         {
-            var now = GameCatalog.FindRunning(_settings());
+            var now = GameCatalog.FindRunning(_settings(), Current);
             var before = Current;
             if (before != null && (now is null || now.Pid != before.Pid))
             {
