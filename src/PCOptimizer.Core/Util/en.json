@@ -1952,5 +1952,12 @@
  "Não foi possível iniciar o PresentMon: {0}": "Could not start PresentMon: {0}",
  "Acesso negado ao medir FPS (o PresentMon precisa de administrador ou do grupo \"Performance Log Users\").": "Access denied while measuring FPS (PresentMon needs administrator rights or the \"Performance Log Users\" group).",
  "O PresentMon terminou (código {0}).": "PresentMon exited (code {0}).",
- "O PresentMon terminou (código {0}): {1}": "PresentMon exited (code {0}): {1}"
+ "O PresentMon terminou (código {0}): {1}": "PresentMon exited (code {0}): {1}",
+ "ativar a medição de FPS": "enable FPS measurement",
+ "Não foi possível ativar a medição de FPS.": "Could not enable FPS measurement.",
+ "Medição de FPS ativada": "FPS measurement enabled",
+ "O teu utilizador entrou no grupo \"Performance Log Users\" do Windows.": "Your user joined the Windows \"Performance Log Users\" group.",
+ "desativar a medição de FPS": "disable FPS measurement",
+ "Não foi possível desativar a medição de FPS.": "Could not disable FPS measurement.",
+ "✓ Medição de FPS desativada. Termina sessão no Windows para ter efeito.": "✓ FPS measurement disabled. Sign out of Windows for it to take effect."
 }

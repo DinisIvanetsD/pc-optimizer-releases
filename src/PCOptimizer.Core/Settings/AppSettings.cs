@@ -48,6 +48,8 @@ public sealed class AppSettings
     public bool OverlayEnabled { get; set; } = true;
     public double? OverlayLeft { get; set; }
     public double? OverlayTop { get; set; }
+    /// <summary>Quando a medição de FPS foi ativada (utilizador no grupo "Performance Log Users"); null = não ativada.</summary>
+    public DateTime? FpsEnabledAt { get; set; }
 
     // atualizações
     public bool CheckUpdates { get; set; } = true;

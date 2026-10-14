@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using PCOptimizer.Core.Apps;
+using PCOptimizer.Core.Benchmark;
 using PCOptimizer.Core.Memory;
 using PCOptimizer.Core.Network;
 using PCOptimizer.Core.Optimization;
@@ -10,7 +11,7 @@ namespace PCOptimizer.Core.History;
 public enum ChangeKind { Tweak, Startup, Network, Memory, Files, Uninstall, Driver, Cleanup, Install, Recording }
 
 /// <summary>Como desfazer uma alteração. None = não dá (ex.: desinstalar, esvaziar a Reciclagem).</summary>
-public enum UndoKind { None, Tweak, Startup, Dns, Qos, BadMemory, RecycleBin, RestorePoint, Nic, AppInstall, Hosts }
+public enum UndoKind { None, Tweak, Startup, Dns, Qos, BadMemory, RecycleBin, RestorePoint, Nic, AppInstall, Hosts, PerfLogUsers }
 
 public sealed class ChangeEntry
 {
@@ -128,6 +129,11 @@ public static class ChangeLog
 
             case UndoKind.Hosts:
                 msg = await HostsBlocker.DisableAsync() ? Loc.T("✓ Bloqueio de anúncios desligado.") : Loc.T("O bloqueio já estava desligado.");
+                break;
+
+            case UndoKind.PerfLogUsers:
+                await PerfLogAccess.DisableAsync(e.Data["user"]);
+                msg = Loc.T("✓ Medição de FPS desativada. Termina sessão no Windows para ter efeito.");
                 break;
 
             case UndoKind.BadMemory:

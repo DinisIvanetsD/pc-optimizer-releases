@@ -109,4 +109,22 @@ public class FpsTests
     [InlineData(1, "  erro qualquer ", "O PresentMon terminou (código 1): erro qualquer")]
     public void Outros_codigos_levam_o_codigo_e_a_primeira_linha_do_stderr(int code, string? stderr, string expected) =>
         Assert.Equal(expected, FrameCapture.ExitMessage(code, stderr));
+
+    [Theory]
+    [InlineData(true, false, false, FpsAccess.Ready)]          // administrador
+    [InlineData(false, true, false, FpsAccess.Ready)]          // já no grupo
+    [InlineData(false, false, false, FpsAccess.NeedsEnable)]
+    [InlineData(false, false, true, FpsAccess.NeedsSignOut)]   // ativado, falta terminar sessão
+    public void Estado_do_acesso_aos_FPS(bool elevated, bool member, bool enabled, FpsAccess expected) =>
+        Assert.Equal(expected, PerfLogAccess.State(elevated, member, enabled ? DateTime.Now : null));
+
+    [Fact]
+    public void Juntar_ao_grupo_usa_SIDs_e_nao_nomes()
+    {
+        var add = PerfLogAccess.AddScript("S-1-5-21-1-2-3-1001");
+        Assert.Contains("-SID 'S-1-5-32-559'", add);
+        Assert.Contains("'S-1-5-21-1-2-3-1001'", add);
+        Assert.DoesNotContain("Performance Log Users", add);
+        Assert.Contains("Remove-LocalGroupMember", PerfLogAccess.RemoveScript("S-1-5-21-1-2-3-1001"));
+    }
 }
