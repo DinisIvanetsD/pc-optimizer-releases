@@ -97,6 +97,14 @@ public class FpsTests
     }
 
     [Theory]
+    [InlineData(0, false, true)]    // acabou com o jogo: fim normal
+    [InlineData(0, true, false)]    // código 0 mas o jogo ainda corre
+    [InlineData(6, false, false)]
+    [InlineData(1, false, false)]
+    public void Fim_normal_so_com_codigo_0_e_o_jogo_fechado(int code, bool targetAlive, bool expected) =>
+        Assert.Equal(expected, FrameCapture.IsNormalEnd(code, targetAlive));
+
+    [Theory]
     [InlineData(0, null, "O PresentMon terminou (código 0).")]
     [InlineData(1, "  erro qualquer ", "O PresentMon terminou (código 1): erro qualquer")]
     public void Outros_codigos_levam_o_codigo_e_a_primeira_linha_do_stderr(int code, string? stderr, string expected) =>

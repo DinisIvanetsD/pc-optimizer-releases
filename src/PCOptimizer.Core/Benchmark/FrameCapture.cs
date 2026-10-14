@@ -19,6 +19,7 @@ public sealed class FrameCapture : IDisposable
 
     readonly int _pid;
     readonly object _gate = new();
+    readonly CancellationTokenSource _stop = new();   // o Dispose cancela a espera pela saída
     Process? _process;
     bool _started;
     volatile bool _disposed;
@@ -30,7 +31,7 @@ public sealed class FrameCapture : IDisposable
     /// <summary>Tempo de um frame, em milissegundos.</summary>
     public event Action<double>? Frame;
 
-    /// <summary>O PresentMon não arrancou ou terminou (mensagem para o log).</summary>
+    /// <summary>O PresentMon não arrancou ou terminou sem ser pedido, a não ser no fim normal (ver <see cref="IsNormalEnd"/>). Mensagem para o log.</summary>
     public event Action<string>? Failed;
 
     public void Start()
@@ -53,16 +54,16 @@ public sealed class FrameCapture : IDisposable
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                         },
-                        EnableRaisingEvents = true,
                     };
                     p.OutputDataReceived += (_, e) => OnOutput(e.Data);
                     p.ErrorDataReceived += (_, e) => OnError(e.Data);
-                    p.Exited += (s, _) => OnExited((Process)s!);
                     p.Start();
                     _process = p;
                     _started = true;
                     p.BeginOutputReadLine();
                     p.BeginErrorReadLine();
+                    var ct = _stop.Token;
+                    Task.Run(() => WatchAsync(p, ct));
                 }
                 catch (Exception ex)
                 {
@@ -85,15 +86,28 @@ public sealed class FrameCapture : IDisposable
         if (!string.IsNullOrWhiteSpace(line)) Interlocked.CompareExchange(ref _firstError, line.Trim(), null);
     }
 
-    void OnExited(Process p)
+    // Não usa o evento Process.Exited: o .NET segura o lock do Process enquanto o evento corre, e o Dispose precisa
+    // desse lock. Aqui os assinantes correm numa thread do pool, sem lock nenhum do Process.
+    async Task WatchAsync(Process p, CancellationToken ct)
     {
         try
         {
-            p.WaitForExit();          // deixa chegar o que falta do stderr
+            await p.WaitForExitAsync(ct).ConfigureAwait(false);   // espera também pelo fim do stderr
             if (_disposed) return;
-            Raise(Failed, ExitMessage(p.ExitCode, _firstError));
+            var code = p.ExitCode;
+            if (!IsNormalEnd(code, IsRunning(_pid))) Raise(Failed, ExitMessage(code, _firstError));
         }
-        catch { }                     // o Dispose pode largar o processo a meio
+        catch { }                     // o Dispose cancela a espera e pode largar o processo a meio
+    }
+
+    /// <summary>Código 0 com o jogo já fechado: o PresentMon acabou porque o jogo acabou. Não é falha.</summary>
+    public static bool IsNormalEnd(int exitCode, bool targetAlive) => exitCode == 0 && !targetAlive;
+
+    static bool IsRunning(int pid)
+    {
+        try { using var t = Process.GetProcessById(pid); return !t.HasExited; }
+        catch (ArgumentException) { return false; }   // já não existe
+        catch { return true; }                        // não deu para ver: melhor avisar do que esconder
     }
 
     /// <summary>A mensagem para o log quando o PresentMon sai sem ter sido pedido. Código 6 = acesso negado.</summary>
@@ -134,10 +148,12 @@ public sealed class FrameCapture : IDisposable
         Frame = null;
         Failed = null;
 
+        try { _stop.Cancel(); } catch { }
         try { if (p != null && !p.HasExited) p.Kill(entireProcessTree: true); } catch { }
         try { p?.Dispose(); } catch { }
         // sem processo lançado não há sessão nossa para fechar (e não se mata a de outra captura)
         // Task.Run: sem o contexto da interface, o Wait não bloqueia a continuação do logman
         if (started) try { Task.Run(StopSessionAsync).Wait(TimeSpan.FromSeconds(5)); } catch { }
+        _stop.Dispose();
     }
 }
