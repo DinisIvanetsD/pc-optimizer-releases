@@ -14,7 +14,8 @@ public sealed class ComponentVm(Component c)
     public List<DetailVm> Details { get; } = c.Details.Select(d => new DetailVm(d.Label, d.Value)).ToList();
     public string? Warning => c.Warning;
     public bool HasWarning => c.Warning != null;
-}
+    public string? Note => c.Note;
+    public bool HasNote => c.Note != null;}
 
 public partial class MainWindow
 {
@@ -45,7 +46,7 @@ public partial class MainWindow
     {
         if (_components is null) return;
         var text = string.Join("\n\n", _components.Select(c =>
-            $"{c.Kind}: {c.Name}\n" + string.Join("\n", c.Details.Select(d => $"  {d.Label}: {d.Value}")) + (c.Warning is null ? "" : $"\n  ⚠ {c.Warning}")));
+            $"{c.Kind}: {c.Name}\n" + string.Join("\n", c.Details.Select(d => $"  {d.Label}: {d.Value}")) + (c.Warning is null ? "" : $"\n  ⚠ {c.Warning}") + (c.Note is null ? "" : $"\n  {c.Note}")));
         try
         {
             Clipboard.SetText(text);

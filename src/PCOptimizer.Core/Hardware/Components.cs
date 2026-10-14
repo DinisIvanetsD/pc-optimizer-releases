@@ -5,8 +5,8 @@ using PCOptimizer.Core.Util;
 
 namespace PCOptimizer.Core.Hardware;
 
-/// <summary>Uma peça do PC com os detalhes que interessam e, se houver, um aviso.</summary>
-public sealed record Component(string Kind, string Icon, string Name, IReadOnlyList<(string Label, string Value)> Details, string? Warning = null);
+/// <summary>Uma peça do PC com os detalhes que interessam e, se houver, um aviso (a amarelo) ou uma nota (informação neutra).</summary>
+public sealed record Component(string Kind, string Icon, string Name, IReadOnlyList<(string Label, string Value)> Details, string? Warning = null, string? Note = null);
 
 /// <summary>As peças do PC (CPU, GPU, RAM, discos, placa-mãe, rede) lidas pelo WMI. Só lê, não muda nada.</summary>
 public static class Components
@@ -164,8 +164,9 @@ public static class Components
     static void Fans(List<Component> list, List<GpuSensor> sensors)
     {
         var details = sensors.Where(g => g.FanPercent != null).Select(g => (Loc.T("Placa gráfica"), $"{g.FanPercent}%")).ToList();
-        details.Add((Loc.T("Caixa e CPU"), Loc.T("O Windows não as mostra sem um driver especial. Vê-as na BIOS ou com o HWiNFO (aba Apps).")));
-        list.Add(new(Loc.T("Ventoinhas"), "🌀", Loc.T("Ventoinhas"), details));
+        var name = details.Count > 0 ? Loc.T("Só a da placa gráfica") : Loc.T("Sem leitura no Windows");
+        list.Add(new(Loc.T("Ventoinhas"), "🌀", name, details,
+            Note: Loc.T("As da caixa e do CPU só aparecem com um driver especial. Vê-as na BIOS ou com o HWiNFO (aba Apps).")));
     }
 
     static string FormatSpeed(ulong bps) => bps >= 1_000_000_000 ? $"{bps / 1e9:0.#} Gbps" : $"{bps / 1e6:0} Mbps";

@@ -418,7 +418,6 @@
  "Cache que a gráfica cria para os jogos. Volta a ser criada sozinha: o primeiro arranque de cada jogo fica um pouco mais lento. Útil se um jogo tiver stutter ou gráficos estranhos.": "Cache the graphics card builds for games. It's recreated automatically: the first launch of each game is a bit slower. Useful if a game has stutter or strange graphics.",
  "Cada alteração fica no Histórico com um botão para desfazer. Nada é apagado sem confirmações (e vai para a Reciclagem).": "Every change goes into History with an undo button. Nothing is deleted without confirmation (and it goes to the Recycle Bin).",
  "Cada um atrasa o arranque e fica a gastar RAM e CPU em segundo plano. Desativa os que não precisas logo ao ligar o PC.": "Each one delays booting and keeps using RAM and CPU in the background. Disable the ones you don't need right when the PC starts.",
- "Caixa e CPU": "Case and CPU",
  "Calculada a partir dos problemas encontrados no Diagnóstico": "Calculated from the problems found in Diagnostics",
  "Calculadora": "Calculator",
  "Caminho limpo ✓": "Clean path ✓",
@@ -983,7 +982,6 @@
  "O Windows está instalado num disco mecânico (HDD)": "Windows is installed on a mechanical drive (HDD)",
  "O Windows guardou o driver novo, mas manteve o atual porque o considera mais adequado à tua placa.": "Windows saved the new driver, but kept the current one because it considers it a better fit for your device.",
  "O Windows junta pacotes TCP pequenos e espera pela confirmação antes de enviar. Atrasa jogos que usam TCP (ex.: League of Legends, WoW).": "Windows groups small TCP packets and waits for acknowledgement before sending. Delays games that use TCP (e.g. League of Legends, WoW).",
- "O Windows não as mostra sem um driver especial. Vê-as na BIOS ou com o HWiNFO (aba Apps).": "Windows doesn't show them without a special driver. Check them in the BIOS or with HWiNFO (Apps tab).",
  "O Windows não conseguiu otimizar o disco: ": "Windows couldn't optimize the drive: ",
  "O Windows não deixa ler esta pasta": "Windows doesn't allow reading this folder",
  "O Windows não deixou (pode estar em uso): ": "Windows didn't allow it (it may be in use): ",
@@ -1920,5 +1918,8 @@
  "Só uma das listas descarregou, por isso o bloqueio ficou incompleto. Carrega em Atualizar lista mais tarde.": "Only one of the lists downloaded, so the blocking is incomplete. Click Update list later.",
  "Ecrã azul a {0}: {1}": "Blue screen on {0}: {1}",
  "{0} ecrãs azuis {1} (o último a {2})": "{0} blue screens {1} (the last one on {2})",
- "{0:dd/MM} às {1:HH:mm}": "{0:dd/MM} at {1:HH:mm}"
+ "{0:dd/MM} às {1:HH:mm}": "{0:dd/MM} at {1:HH:mm}",
+ "As da caixa e do CPU só aparecem com um driver especial. Vê-as na BIOS ou com o HWiNFO (aba Apps).": "Case and CPU fans only show up with a special driver. Check them in the BIOS or with HWiNFO (Apps tab).",
+ "Sem leitura no Windows": "No reading in Windows",
+ "Só a da placa gráfica": "Graphics card only"
 }

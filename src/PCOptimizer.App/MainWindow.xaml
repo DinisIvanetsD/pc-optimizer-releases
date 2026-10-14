@@ -912,6 +912,10 @@
                               Visibility="{Binding HasWarning, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="{Binding Warning}" Foreground="{StaticResource WarnBrush}" FontSize="12" TextWrapping="Wrap"/>
                       </Border>
+                      <Border Background="{StaticResource InputBrush}" CornerRadius="8" Padding="10,8" Margin="0,10,0,0"
+                              Visibility="{Binding HasNote, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{Binding Note}" Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap"/>
+                      </Border>
                     </StackPanel>
                   </Border>
                 </DataTemplate>
