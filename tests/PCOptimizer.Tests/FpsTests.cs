@@ -1,3 +1,4 @@
+using PCOptimizer.Core.Benchmark;
 using Xunit;
 
 namespace PCOptimizer.Tests;
@@ -26,5 +27,51 @@ public class FpsTests
         Assert.Equal("b2a706bc6ad475749e3b7e3409263aa1e6906d45bdcf993f6dbc0f660188f1af",
             Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(f)).ToLowerInvariant());
         Assert.True(File.Exists(Tool("PresentMon-LICENSE.txt")));
+    }
+
+    [Fact]
+    public void Estatisticas_de_frames_conhecidos()
+    {
+        var ms = Enumerable.Repeat(10.0, 980).Concat(Enumerable.Repeat(40.0, 20)).ToList();
+        var s = FrameStats.From(ms)!;
+        Assert.Equal(1000, s.Frames);
+        Assert.Equal(10.6, s.Seconds, 3);
+        Assert.Equal(94.34, s.AvgFps, 2);   // 1000 frames / 10,6 s
+        Assert.Equal(25, s.Low1Fps, 3);     // percentil 99 dos tempos = 40 ms
+        Assert.Equal(25, s.Low01Fps, 3);
+        Assert.Equal(20, s.Stutters);       // 40 ms > 2,5 × mediana (10 ms)
+    }
+
+    [Fact]
+    public void Sem_frames_nao_ha_estatisticas() => Assert.Null(FrameStats.From(Array.Empty<double>()));
+
+    [Fact]
+    public void Le_a_captura_real_do_PresentMon()
+    {
+        var lines = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "Fixtures", "presentmon-2.6.0.csv"));
+        var reader = lines.Select(FrameCsvReader.TryCreate).First(r => r != null)!;
+        var frames = lines.Select(reader.ReadFrameMs).OfType<double>().ToList();
+        Assert.True(frames.Count >= 20);
+        Assert.All(frames, ms => Assert.InRange(ms, 0.1, 1000));
+    }
+
+    [Theory]
+    [InlineData("Application,ProcessID,FrameTime,DisplayedTime", "game.exe,10,16.7,NA", 16.7)]
+    [InlineData("Application,ProcessID,MsBetweenPresents", "game.exe,10,8.3", 8.3)]
+    [InlineData("Application,ProcessID,FrameTime", "game.exe,10,NA", null)]
+    [InlineData("Application,ProcessID,FrameTime", "game.exe,10", null)]          // linha cortada
+    [InlineData("Application,ProcessID,FrameTime", "game.exe,10,0", null)]        // tempo inválido
+    public void Le_as_duas_versoes_do_cabecalho(string header, string line, double? expected) =>
+        Assert.Equal(expected, FrameCsvReader.TryCreate(header)!.ReadFrameMs(line));
+
+    [Fact]
+    public void Cabecalho_sem_coluna_de_tempo_nao_serve() => Assert.Null(FrameCsvReader.TryCreate("Application,ProcessID"));
+
+    [Fact]
+    public void Janela_guarda_so_os_ultimos_segundos()
+    {
+        var w = new FrameWindow(seconds: 1);
+        for (var i = 0; i < 200; i++) w.Add(10);       // 2 s de frames
+        Assert.Equal(100, w.Stats()!.Frames);           // fica só o último segundo
     }
 }
