@@ -102,11 +102,14 @@ public static class GameCatalog
     public static bool IsCandidate(string processName, bool coversMonitor) => coversMonitor && !NotGames.Contains(processName);
 
     /// <summary>
-    /// Um jogo conhecido ganha sempre. Um jogo detetado por ecrã inteiro fica até o processo fechar
-    /// (o Alt+Tab não o acaba); só então conta o que está agora em primeiro plano.
+    /// Um jogo conhecido ganha sempre; depois, um novo candidato em ecrã inteiro. Sem nenhum dos dois (ex.: Alt+Tab para
+    /// o browser) o jogo detetado antes fica até o processo fechar.
     /// </summary>
     public static RunningGame? Pick(RunningGame? known, RunningGame? foreground, RunningGame? current, Func<int, bool> alive) =>
-        known ?? (current is { Detected: true } && alive(current.Pid) ? current : null) ?? foreground;
+        known ?? foreground ?? (current is { Detected: true } && alive(current.Pid) ? current : null);
+
+    /// <summary>Sem barra de título (WS_CAPTION = WS_BORDER | WS_DLGFRAME): ecrã inteiro ou sem bordas, não uma janela maximizada.</summary>
+    public static bool IsBorderless(long style) => (style & 0x00C00000) != 0x00C00000;
 
     /// <summary>O jogo aberto agora (null = nenhum). <paramref name="current"/> é o que já se sabia, para o Alt+Tab não o perder.</summary>
     public static RunningGame? FindRunning(AppSettings s, RunningGame? current = null)
@@ -153,6 +156,7 @@ public static class GameCatalog
     static bool CoversMonitor(IntPtr hwnd)
     {
         var mi = new MonitorInfo { Size = System.Runtime.InteropServices.Marshal.SizeOf<MonitorInfo>() };
+        if (!IsBorderless((uint)GetWindowLong(hwnd, -16))) return false; // -16 = GWL_STYLE; uma janela maximizada com a barra escondida também ocupa o monitor
         if (!GetWindowRect(hwnd, out var w) || !GetMonitorInfo(MonitorFromWindow(hwnd, 2), ref mi)) return false; // 2 = o monitor mais próximo
         var m = mi.Monitor;
         return w.Left <= m.Left && w.Top <= m.Top && w.Right >= m.Right && w.Bottom >= m.Bottom;
@@ -181,6 +185,7 @@ public static class GameCatalog
 
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern int GetWindowLong(IntPtr hwnd, int index);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);

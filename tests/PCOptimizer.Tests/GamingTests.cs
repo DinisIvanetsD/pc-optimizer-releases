@@ -58,6 +58,21 @@ public class GamingTests
         Assert.Same(detected, GameCatalog.Pick(null, detected, null, _ => true));               // novo em primeiro plano
     }
 
+    [Fact]
+    public void Um_jogo_novo_em_ecra_inteiro_substitui_o_detetado_antes()
+    {
+        var detected = new RunningGame(new GameInfo("eldenring", "eldenring.exe"), 7, null, Detected: true);
+        var other = new RunningGame(new GameInfo("hades", "hades.exe"), 8, null, Detected: true);
+        Assert.Same(other, GameCatalog.Pick(null, other, detected, _ => true));
+    }
+
+    [Theory]
+    [InlineData(0x90000000, true)]    // WS_POPUP | WS_VISIBLE: ecrã inteiro exclusivo ou sem bordas
+    [InlineData(0x01CF0000, false)]   // WS_OVERLAPPEDWINDOW | WS_MAXIMIZE: janela normal maximizada
+    [InlineData(0x00800000, true)]    // só WS_BORDER, sem WS_DLGFRAME: não é barra de título
+    public void So_janelas_sem_barra_de_titulo_podem_ser_jogos(long style, bool expected) =>
+        Assert.Equal(expected, GameCatalog.IsBorderless(style));
+
     // ---- servidor do jogo
 
     [Theory]
