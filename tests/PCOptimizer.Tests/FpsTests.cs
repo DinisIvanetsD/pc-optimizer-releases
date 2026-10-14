@@ -74,4 +74,31 @@ public class FpsTests
         for (var i = 0; i < 200; i++) w.Add(10);       // 2 s de frames
         Assert.Equal(100, w.Stats()!.Frames);           // fica só o último segundo
     }
+
+    [Fact]
+    public void Argumentos_do_PresentMon() =>
+        Assert.Equal("--process_id 4242 --output_stdout --no_console_stats --session_name Rigwise --stop_existing_session --terminate_on_proc_exit",
+            FrameCapture.Arguments(4242));
+
+    [Fact]
+    public void Descartar_sem_ter_comecado_ou_duas_vezes_nao_rebenta()
+    {
+        var c = new FrameCapture(pid: 1);
+        c.Dispose();
+        c.Dispose();
+    }
+
+    [Fact]
+    public void Codigo_6_do_PresentMon_e_acesso_negado()
+    {
+        var msg = FrameCapture.ExitMessage(6, null);
+        Assert.Contains("Acesso negado", msg);
+        Assert.Contains("Performance Log Users", msg);
+    }
+
+    [Theory]
+    [InlineData(0, null, "O PresentMon terminou (código 0).")]
+    [InlineData(1, "  erro qualquer ", "O PresentMon terminou (código 1): erro qualquer")]
+    public void Outros_codigos_levam_o_codigo_e_a_primeira_linha_do_stderr(int code, string? stderr, string expected) =>
+        Assert.Equal(expected, FrameCapture.ExitMessage(code, stderr));
 }

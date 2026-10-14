@@ -1947,5 +1947,10 @@
  "{0}% (como nova)": "{0}% (like new)",
  "{0}% (bom)": "{0}% (good)",
  "{0}% (gasta)": "{0}% (worn)",
- "{0}% (muito gasta)": "{0}% (very worn)"
+ "{0}% (muito gasta)": "{0}% (very worn)",
+ "Não encontrei o PresentMon em {0}.": "Could not find PresentMon at {0}.",
+ "Não foi possível iniciar o PresentMon: {0}": "Could not start PresentMon: {0}",
+ "Acesso negado ao medir FPS (o PresentMon precisa de administrador ou do grupo \"Performance Log Users\").": "Access denied while measuring FPS (PresentMon needs administrator rights or the \"Performance Log Users\" group).",
+ "O PresentMon terminou (código {0}).": "PresentMon exited (code {0}).",
+ "O PresentMon terminou (código {0}): {1}": "PresentMon exited (code {0}): {1}"
 }
