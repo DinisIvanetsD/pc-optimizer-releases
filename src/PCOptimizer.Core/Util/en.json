@@ -1975,5 +1975,17 @@
  "⏱  Testar FPS": "⏱  Test FPS",
  "Desfazer esses ajustes": "Undo those tweaks",
  "Manter": "Keep",
- "Joga um bocado: os FPS de cada sessão aparecem aqui.": "Play for a while: the FPS of each session shows up here."
+ "Joga um bocado: os FPS de cada sessão aparecem aqui.": "Play for a while: the FPS of each session shows up here.",
+ "A medir {0} s · fica no mesmo sítio": "Measuring {0} s · stay in the same spot",
+ "Teste interrompido, repete.": "Test interrupted, try again.",
+ "Guardado como Antes. Otimiza e repete o teste no mesmo sítio.": "Saved as Before. Optimize and repeat the test in the same spot.",
+ "Melhorou: {0}% FPS médios, 1% low {1}%.": "Improved: {0}% average FPS, 1% low {1}%.",
+ "Sem diferença (±3% é a variação normal entre testes). Os {0} ajustes aplicados desde {1:dd/MM} não deram FPS neste jogo.": "No difference (±3% is the normal variation between tests). The {0} tweaks applied since {1:dd/MM} gave no FPS in this game.",
+ "Piorou: {0}% FPS médios.": "Worse: {0}% average FPS.",
+ "Resultado misto: {0}% FPS médios, mas 1% low {1}% (mais engasgos).": "Mixed result: {0}% average FPS, but 1% low {1}% (more stutters).",
+ "Os FPS parecem limitados a {0} (V-Sync ou limite do jogo): desliga o limite para o teste mostrar diferenças.": "FPS seem capped at {0} (V-Sync or the game's limit): turn the limit off so the test can show differences.",
+ "✓ {0} ajuste(s) desfeito(s). Reinicia o PC se algum o pedia.": "✓ {0} tweak(s) undone. Restart the PC if any of them asked for it.",
+ "Repete o teste no mesmo sítio para ver se a otimização ajudou.": "Repeat the test in the same spot to see if the optimization helped.",
+ "\n\nDica: mede os FPS antes (Rede › FPS por jogo) para provar o ganho.": "\n\nTip: measure FPS first (Network › FPS per game) to prove the gain.",
+ "FPS ({0})": "FPS ({0})"
 }

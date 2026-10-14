@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using PCOptimizer.Core;
+using PCOptimizer.Core.Benchmark;
 using PCOptimizer.Core.Diagnostics;
 using PCOptimizer.Core.Memory;
 using PCOptimizer.Core.Monitoring;
@@ -476,8 +477,11 @@ public partial class MainWindow : Window
         if (selected.Any(t => t.RequiresAdmin) && !EnsureAdmin()) return;
 
         var list = string.Join("\n", selected.Select(t => $"• {t.Name}" + (t.Tweak.Risk == Risk.High ? Loc.T("  ⚠ RISCO ALTO") : "")));
+        // perfil Gaming sem nenhum teste Antes: sugere medir primeiro (não bloqueia)
+        var fpsHint = _currentProfile.Profile.Id == "gaming" && !FpsHistory.All.Any(r => r.Role == FpsRole.Before)
+            ? Loc.T("\n\nDica: mede os FPS antes (Rede › FPS por jogo) para provar o ganho.") : "";
         if (!Confirm(Loc.T($"Vou aplicar {selected.Count} ajuste(s) do perfil {_currentProfile.Name}:\n\n{list}\n\n") +
-                     Loc.T("Guardo o estado atual de cada um, por isso podes reverter tudo depois. Continuar?")))
+                     Loc.T("Guardo o estado atual de cada um, por isso podes reverter tudo depois. Continuar?") + fpsHint))
             return;
 
         ApplyButton.IsEnabled = false;

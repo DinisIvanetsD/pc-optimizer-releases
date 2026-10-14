@@ -107,22 +107,31 @@ public partial class MainWindow
         var all = PcMetrics.All;
         var before = PcMetrics.Baseline(all);
         var now = all.LastOrDefault();
+        var rows = new List<CompareRowVm>();
         if (before is null || now is null || ReferenceEquals(before, now) || before.When == now.When)
-        {
-            CompareHeader.Visibility = Visibility.Collapsed;
-            CompareRows.ItemsSource = null;
             CompareText.Text = before is null
                 ? Loc.T("Mede o PC para comparar depois de otimizar.")
                 : Loc.T($"Medido a {before.When:dd/MM HH:mm}. Otimiza e mede outra vez.");
-            return;
+        else
+        {
+            CompareBeforeHeader.Text = Loc.T($"ANTES ({before.When:dd/MM})");
+            CompareNowHeader.Text = Loc.T($"AGORA ({now.When:dd/MM HH:mm})");
+            CompareText.Text = Loc.T($"\"{before.Label}\" comparado com a última medição.");
+            rows.AddRange(PcMetrics.Compare(before, now).Select(d => new CompareRowVm(d.Name, d.Before, d.Now,
+                d.Change.Length == 0 ? "—" : d.Change, d.Better switch { true => Palette.Ok, false => Palette.Critical, _ => Palette.Muted })));
         }
 
-        CompareHeader.Visibility = Visibility.Visible;
-        CompareBeforeHeader.Text = Loc.T($"ANTES ({before.When:dd/MM})");
-        CompareNowHeader.Text = Loc.T($"AGORA ({now.When:dd/MM HH:mm})");
-        CompareText.Text = Loc.T($"\"{before.Label}\" comparado com a última medição.");
-        CompareRows.ItemsSource = PcMetrics.Compare(before, now).Select(d => new CompareRowVm(d.Name, d.Before, d.Now,
-            d.Change.Length == 0 ? "—" : d.Change, d.Better switch { true => Palette.Ok, false => Palette.Critical, _ => Palette.Muted })).ToList();
+        // o último par de testes de FPS, com a diferença no formato do PcMetrics.Compare ("+16 (11%)")
+        if (FpsHistory.LatestPair() is { } p)
+        {
+            var c = FpsVerdict.Compare(p.Before, p.After);
+            var diff = p.After.AvgFps - p.Before.AvgFps;
+            rows.Add(new CompareRowVm(Loc.T($"FPS ({p.After.Game})"), $"{p.Before.AvgFps:N0}", $"{p.After.AvgFps:N0}",
+                (diff > -0.5 ? "+" : "−") + $"{Math.Abs(diff):N0} ({Math.Abs(c.AvgChangePct):N0}%)", // −0,4 arredonda a "+0", não a "−0"
+                c.Outcome switch { FpsOutcome.Better => Palette.Ok, FpsOutcome.Worse => Palette.Critical, _ => Palette.Muted }));
+        }
+        CompareHeader.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        CompareRows.ItemsSource = rows.Count > 0 ? rows : null;
     }
 
     async void Measure_Click(object sender, RoutedEventArgs e)

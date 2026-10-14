@@ -1,7 +1,12 @@
-﻿using System.Windows;
+﻿using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using PCOptimizer.Core.Benchmark;
 using PCOptimizer.Core.Gaming;
+using PCOptimizer.Core.History;
+using PCOptimizer.Core.Optimization;
 using PCOptimizer.Core.Util;
 
 namespace PCOptimizer.App;
@@ -44,6 +49,8 @@ public partial class MainWindow
         EndCapture(); // nunca duas capturas: o Dispose de uma antiga fecharia a sessão ETW da nova
         GameFps.Text = GameLow1.Text = "--";
         if (PerfLogAccess.Current != FpsAccess.Ready) return;
+        // só com um jogo a medir, para não roubar o Ctrl+Shift+F às outras apps o resto do tempo
+        RegisterHotKey(new WindowInteropHelper(this).Handle, FpsHotkeyId, 0x0002 | 0x0004 | 0x4000 /* Ctrl | Shift | sem repetição */, 0x46 /* F */);
 
         var cap = new FrameCapture(g.Pid);
         cap.Frame += ms =>
@@ -75,8 +82,8 @@ public partial class MainWindow
         var s = _fpsWindow.Stats();
         GameFps.Text = s is null ? "--" : $"{s.AvgFps:N0}";
         GameLow1.Text = s is null ? "--" : $"{s.Low1Fps:N0}";
-        // jogo detetado = sem servidor: o overlay só mostra os FPS, sem separador
-        _overlay?.ShowFps(s is null ? null : Loc.T($"{s.AvgFps:N0} FPS · 1% {s.Low1Fps:N0}") + (detected ? "" : " │ "));
+        // jogo detetado = sem servidor: o overlay só mostra os FPS, sem separador; durante o teste mostra a contagem
+        if (_testTimer is null) _overlay?.ShowFps(s is null ? null : Loc.T($"{s.AvgFps:N0} FPS · 1% {s.Low1Fps:N0}") + (detected ? "" : " │ "));
     }
 
     /// <summary>Os FPS desaparecem do quadro e do overlay. Os frames já medidos ficam para o resumo da sessão.</summary>
@@ -105,6 +112,8 @@ public partial class MainWindow
     /// <summary>Para o temporizador e a captura, esvazia a janela e a lista. Devolve os frames da sessão.</summary>
     List<double> EndCapture()
     {
+        InterruptFpsTest(); // jogo fechou, outro jogo ou a app a fechar: o teste a meio não conta
+        UnregisterHotKey(new WindowInteropHelper(this).Handle, FpsHotkeyId);
         _fpsTimer?.Stop();
         _fpsTimer = null;
         FrameCapture? cap;
@@ -147,10 +156,153 @@ public partial class MainWindow
         finally { FpsAccessButton.IsEnabled = true; }
     }
 
-    // A Tarefa 9 (teste guiado, veredito e desfazer) preenche estes três.
-    void TestFps_Click(object sender, RoutedEventArgs e) { }
+    // ------------------------------------------------------------------ teste guiado (Ctrl+Shift+F), veredito e desfazer
 
-    void FpsUndo_Click(object sender, RoutedEventArgs e) { }
+    const int TestCountdown = 3, TestSeconds = 60;
+    DispatcherTimer? _testTimer;
+    /// <summary>Os ajustes que o "Desfazer esses ajustes" do último veredito reverte.</summary>
+    List<ChangeEntry> _verdictTweaks = new();
 
-    void FpsKeep_Click(object sender, RoutedEventArgs e) { }
+    void TestFps_Click(object sender, RoutedEventArgs e) => StartFpsTest();
+
+    /// <summary>Contagem de 3 s e 60 s a medir. Sem jogo, sem acesso ou com um teste a decorrer, não faz nada.</summary>
+    void StartFpsTest()
+    {
+        if (_testTimer != null || _game is not { } g || PerfLogAccess.Current != FpsAccess.Ready) return;
+        FpsVerdictBox.Visibility = Visibility.Collapsed;
+        var t = -TestCountdown; // negativo: contagem; de 0 a 60: a medir
+        ShowTestText(TestCountdown.ToString());
+        _testTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _testTimer.Tick += (_, _) =>
+        {
+            if (++t < 0) { ShowTestText((-t).ToString()); return; }
+            if (t == 0) lock (_fpsGate) _testFrames = new();
+            // Alt+Tab ou jogo fechado: o teste deixou de medir o mesmo sítio
+            if (_game?.Pid != g.Pid || ForegroundPid() != g.Pid) { InterruptFpsTest(); return; }
+            if (t < TestSeconds) ShowTestText(Loc.T($"A medir {TestSeconds - t} s · fica no mesmo sítio"));
+            else FinishFpsTest(g);
+        };
+        _testTimer.Start();
+    }
+
+    /// <summary>No overlay (no lugar dos FPS ao vivo) e no cartão, para quem carregou no botão com o overlay desligado.</summary>
+    void ShowTestText(string text)
+    {
+        FpsTestStatus.Text = text;
+        _overlay?.ShowFps(text + (_game is { Detected: false } ? " │ " : ""));
+    }
+
+    /// <summary>Descarta o teste a decorrer, se houver.</summary>
+    void InterruptFpsTest()
+    {
+        if (_testTimer is null) return;
+        EndFpsTest();
+        FpsTestStatus.Text = Loc.T("Teste interrompido, repete.");
+    }
+
+    /// <summary>Para o temporizador e devolve os frames do teste. O UpdateFps volta a pôr os FPS ao vivo no overlay.</summary>
+    List<double> EndFpsTest()
+    {
+        _testTimer?.Stop();
+        _testTimer = null;
+        _overlay?.ShowFps(null);
+        lock (_fpsGate)
+        {
+            var frames = _testFrames ?? new();
+            _testFrames = null;
+            return frames;
+        }
+    }
+
+    void FinishFpsTest(RunningGame g)
+    {
+        var s = FrameStats.From(EndFpsTest());
+        if (s is null || s.Seconds < FpsVerdict.MinSeconds)
+        {
+            FpsTestStatus.Text = Loc.T("Teste interrompido, repete.");
+            return;
+        }
+        var now = DateTime.Now;
+        var before = FpsHistory.PendingBefore(g.Game.Exe);
+        var role = FpsVerdict.NextTestRole(before, ChangeLog.All, now);
+        var run = FpsRun.From(g.Game.Name, g.Game.Exe, role, s, now);
+        FpsHistory.Add(run);
+        RefreshFpsCard();
+        if (role == FpsRole.Before)
+            FpsTestStatus.Text = Loc.T("Guardado como Antes. Otimiza e repete o teste no mesmo sítio.");
+        else
+        {
+            FpsTestStatus.Text = "";
+            ShowVerdict(before!, run); // After só com um Antes pendente
+        }
+    }
+
+    void ShowVerdict(FpsRun before, FpsRun after)
+    {
+        var c = FpsVerdict.Compare(before, after);
+        _verdictTweaks = FpsVerdict.TweaksBetween(ChangeLog.All, before.When, after.When);
+        string avg = Signed(c.AvgChangePct), low = Signed(c.LowChangePct);
+        FpsVerdictTitle.Text = c.Outcome switch { FpsOutcome.Better => "✓", FpsOutcome.Same => "=", FpsOutcome.Worse => "✗", _ => "±" } + "  " + after.Game;
+        FpsVerdictText.Text = c.Outcome switch
+        {
+            FpsOutcome.Better => Loc.T($"Melhorou: {avg}% FPS médios, 1% low {low}%."),
+            FpsOutcome.Same => Loc.T($"Sem diferença (±3% é a variação normal entre testes). Os {_verdictTweaks.Count} ajustes aplicados desde {before.When:dd/MM} não deram FPS neste jogo."),
+            FpsOutcome.Worse => Loc.T($"Piorou: {avg}% FPS médios."),
+            _ => Loc.T($"Resultado misto: {avg}% FPS médios, mas 1% low {low}% (mais engasgos)."),
+        } + (c.Cap is int cap ? " " + Loc.T($"Os FPS parecem limitados a {cap} (V-Sync ou limite do jogo): desliga o limite para o teste mostrar diferenças.") : "");
+
+        var good = c.Outcome == FpsOutcome.Better; // as mesmas cores do veredito "Onde está o lag"
+        FpsVerdictBox.Background = new SolidColorBrush(good ? Color.FromRgb(0x14, 0x2A, 0x1C) : Color.FromRgb(0x3A, 0x2A, 0x14));
+        FpsVerdictBox.BorderBrush = new SolidColorBrush(good ? Color.FromRgb(0x23, 0x4A, 0x30) : Color.FromRgb(0x5A, 0x43, 0x20));
+
+        FpsUndoButton.Visibility = FpsKeepButton.Visibility = _verdictTweaks.Count > 0 && !good ? Visibility.Visible : Visibility.Collapsed;
+        // misto: Manter em primeiro; sem diferença ou pior: Desfazer em primeiro. O primeiro é o botão de destaque.
+        var keepFirst = c.Outcome == FpsOutcome.Mixed;
+        var panel = (System.Windows.Controls.Panel)FpsKeepButton.Parent;
+        panel.Children.Remove(FpsKeepButton);
+        panel.Children.Insert(keepFirst ? 0 : 1, FpsKeepButton);
+        Style primary = (Style)FindResource("PrimaryButton"), plain = (Style)FindResource(typeof(System.Windows.Controls.Button));
+        FpsKeepButton.Style = keepFirst ? primary : plain;
+        FpsUndoButton.Style = keepFirst ? plain : primary;
+        FpsVerdictBox.Visibility = Visibility.Visible;
+    }
+
+    // arredonda para int antes: um double entre −0,5 e 0 sairia "-+0"
+    /// <summary>Variação em % com sinal, sem casas (N0), com o "−" tipográfico.</summary>
+    static string Signed(double pct) => ((int)Math.Round(pct, MidpointRounding.AwayFromZero)).ToString("+#,0;−#,0");
+
+    async void FpsUndo_Click(object sender, RoutedEventArgs e)
+    {
+        FpsUndoButton.IsEnabled = false;
+        try
+        {
+            // TweakCatalog.Get, Simulation.Guard e Admin.Require podem lançar: vai tudo para o catch
+            if (_verdictTweaks.Any(t => TweakCatalog.Get(t.Data["id"]).RequiresAdmin) && !EnsureAdmin()) return;
+            // pode dar menos que o número de ajustes: os que partilham a cópia (planos de energia) revertem juntos
+            var n = await FpsVerdict.UndoTweaksAsync(_verdictTweaks);
+            FpsUndoButton.Visibility = FpsKeepButton.Visibility = Visibility.Collapsed;
+            FpsTestStatus.Text = Loc.T($"✓ {n} ajuste(s) desfeito(s). Reinicia o PC se algum o pedia.");
+        }
+        catch (Exception ex) { FpsTestStatus.Text = Ui.Error(ex); }
+        finally { FpsUndoButton.IsEnabled = true; }
+        await RefreshAllTweaksAsync(); // também depois de um erro a meio: alguns já podem ter sido revertidos
+    }
+
+    void FpsKeep_Click(object sender, RoutedEventArgs e) => FpsVerdictBox.Visibility = Visibility.Collapsed;
+
+    /// <summary>Ao abrir um jogo com um Antes à espera e ajustes feitos depois dele.</summary>
+    void RemindFpsTest(RunningGame g)
+    {
+        if (FpsVerdict.NextTestRole(FpsHistory.PendingBefore(g.Game.Exe), ChangeLog.All, DateTime.Now) == FpsRole.After)
+            FpsTestStatus.Text = Loc.T("Repete o teste no mesmo sítio para ver se a otimização ajudou.");
+    }
+
+    static int ForegroundPid()
+    {
+        GetWindowThreadProcessId(GetForegroundWindow(), out var pid);
+        return (int)pid;
+    }
+
+    [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
 }

@@ -144,6 +144,7 @@ public partial class MainWindow
         _trafficTimer.Start();
         StartFps(g);
         RefreshFpsCard(); // mostra o botão "Testar FPS" (com acesso Ready)
+        RemindFpsTest(g);
         GameTraffic.Text = Admin.IsElevated ? "--" : Loc.T("só com admin");
         if (S.OverlayEnabled && !ScreenshotMode) ShowOverlay("A procurar o servidor…");
 
@@ -349,8 +350,8 @@ public partial class MainWindow
         _overlay!.StartMoving();
     }
 
-    // Ctrl+Shift+O em qualquer lado (também dentro do jogo)
-    const int HotkeyId = 0x4F50, WmHotkey = 0x0312;
+    // Ctrl+Shift+O em qualquer lado (também dentro do jogo); Ctrl+Shift+F (teste de FPS) só se regista com um jogo a medir (StartFps)
+    const int HotkeyId = 0x4F50, FpsHotkeyId = 0x4650, WmHotkey = 0x0312;
 
     void RegisterOverlayHotkey()
     {
@@ -358,6 +359,7 @@ public partial class MainWindow
         HwndSource.FromHwnd(hwnd)?.AddHook((IntPtr h, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) =>
         {
             if (msg == WmHotkey && wParam.ToInt32() == HotkeyId) { ToggleOverlay(); handled = true; }
+            if (msg == WmHotkey && wParam.ToInt32() == FpsHotkeyId) { StartFpsTest(); handled = true; }
             return IntPtr.Zero;
         });
         RegisterHotKey(hwnd, HotkeyId, 0x0002 | 0x0004 | 0x4000 /* Ctrl | Shift | sem repetição */, 0x4F /* O */);
