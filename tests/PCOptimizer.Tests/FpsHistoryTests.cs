@@ -12,7 +12,7 @@ public class FpsHistoryTests : IDisposable
 {
     readonly string _file = Path.Combine(Path.GetTempPath(), $"fps-{Guid.NewGuid():N}.json");
     public FpsHistoryTests() => Environment.SetEnvironmentVariable("PCOPT_FPS_FILE", _file);
-    public void Dispose() { Environment.SetEnvironmentVariable("PCOPT_FPS_FILE", null); File.Delete(_file); }
+    public void Dispose() { Environment.SetEnvironmentVariable("PCOPT_FPS_FILE", null); File.Delete(_file); File.Delete(_file + ".bad"); }
 
     static FpsRun Run(FpsRole role, double avg, double low, DateTime when, string exe = "cs2.exe") =>
         new("Counter-Strike 2", exe, when, role, 60, avg, low, low * 0.8, 0);
@@ -74,5 +74,23 @@ public class FpsHistoryTests : IDisposable
         Assert.Equal(111, FpsHistory.LatestPair()!.Value.After.AvgFps);
         var sum = Assert.Single(FpsHistory.Summaries());
         Assert.Equal(90, sum.Last!.AvgFps);
+    }
+
+    [Fact]
+    public void Ficheiro_estragado_vai_para_bad_e_o_historico_continua()
+    {
+        File.WriteAllText(_file, "{nao e json");
+        FpsHistory.Add(Run(FpsRole.Session, 90, 40, T0));
+        Assert.Equal(90, Assert.Single(FpsHistory.All).AvgFps);
+        Assert.Equal("{nao e json", File.ReadAllText(_file + ".bad"));
+    }
+
+    [Fact]
+    public void Ficheiro_bloqueado_nao_e_apagado()
+    {
+        FpsHistory.Add(Run(FpsRole.Session, 90, 40, T0));
+        using (new FileStream(_file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            FpsHistory.Add(Run(FpsRole.Session, 80, 30, T0.AddMinutes(1)));   // não pode lançar nem apagar o que lá está
+        Assert.Equal(90, Assert.Single(FpsHistory.All).AvgFps);
     }
 }

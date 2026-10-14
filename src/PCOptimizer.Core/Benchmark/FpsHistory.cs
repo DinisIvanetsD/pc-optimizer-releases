@@ -27,7 +27,7 @@ public static class FpsHistory
 
     public static IReadOnlyList<FpsRun> All
     {
-        get { lock (Gate) return Read(); }
+        get { lock (Gate) { TryRead(out var list); return list; } }
     }
 
     /// <summary>Guarda as últimas 200 sessões e os últimos 100 testes (Antes/Depois).</summary>
@@ -35,7 +35,7 @@ public static class FpsHistory
     {
         lock (Gate)
         {
-            var list = Read();
+            if (!TryRead(out var list)) return; // ficheiro existe mas não se lê: não o sobrescrever
             list.Add(run);
             var keep = list.Where(r => r.Role == FpsRole.Session).OrderBy(r => r.When).TakeLast(200)
                 .Concat(list.Where(r => r.Role != FpsRole.Session).OrderBy(r => r.When).TakeLast(100))
@@ -43,7 +43,9 @@ public static class FpsHistory
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-                File.WriteAllText(FilePath, JsonSerializer.Serialize(keep, Json));
+                var tmp = FilePath + ".tmp";
+                File.WriteAllText(tmp, JsonSerializer.Serialize(keep, Json));
+                File.Move(tmp, FilePath, true);
             }
             catch { }
         }
@@ -90,9 +92,24 @@ public static class FpsHistory
 
     static bool Same(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 
-    static List<FpsRun> Read()
+    /// <summary>
+    /// Lê o ficheiro. Sem ficheiro: lista vazia. Estragado: vai para fps.json.bad e a lista fica vazia.
+    /// Não se consegue ler (bloqueado, sem permissão): lista vazia e false, para o Add não apagar o histórico.
+    /// </summary>
+    static bool TryRead(out List<FpsRun> list)
     {
-        try { return File.Exists(FilePath) ? JsonSerializer.Deserialize<List<FpsRun>>(File.ReadAllText(FilePath)) ?? new() : new(); }
-        catch { return new(); }
+        list = new();
+        if (!File.Exists(FilePath)) return true;
+        try
+        {
+            list = JsonSerializer.Deserialize<List<FpsRun>>(File.ReadAllText(FilePath)) ?? new();
+            return true;
+        }
+        catch (JsonException)
+        {
+            try { File.Move(FilePath, FilePath + ".bad", true); } catch { return false; }
+            return true;
+        }
+        catch { return false; }
     }
 }
