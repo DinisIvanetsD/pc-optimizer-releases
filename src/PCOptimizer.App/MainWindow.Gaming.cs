@@ -64,6 +64,7 @@ public partial class MainWindow
         _games?.Dispose();
         _trafficTimer?.Stop();
         _live?.Dispose();
+        if (_game is { } g) StopFps(g); // grava o que já se mediu e fecha a sessão ETW dos FPS
         _traffic?.Dispose(); // importante: as sessões ETW não morrem sozinhas com o processo
         if (_gameSessionOn)
             try { Task.Run(GameSession.RestoreAsync).Wait(TimeSpan.FromSeconds(15)); } catch { }
@@ -141,6 +142,7 @@ public partial class MainWindow
         _trafficTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _trafficTimer.Tick += (_, _) => UpdateGameServer();
         _trafficTimer.Start();
+        StartFps(g);
         GameTraffic.Text = Admin.IsElevated ? "--" : Loc.T("só com admin");
         if (S.OverlayEnabled && !ScreenshotMode) ShowOverlay("A procurar o servidor…");
 
@@ -155,7 +157,9 @@ public partial class MainWindow
 
         var key = g.Game.Exe.ToLowerInvariant();
         var choice = S.GameChoices.TryGetValue(key, out var c) ? c : null;
-        if (choice == "always") _ = StartGameSessionAsync();
+        // jogo detetado pelo ecrã inteiro: medido em silêncio, sem pergunta nem sessão automática (pode ser um falso positivo)
+        if (g.Detected) GameOptimizeButton.Visibility = Visibility.Visible;
+        else if (choice == "always") _ = StartGameSessionAsync();
         else if (choice != "never" && !ScreenshotMode)
         {
             GameOptimizeButton.Visibility = Visibility.Visible;
@@ -179,6 +183,7 @@ public partial class MainWindow
     async Task OnGameStoppedAsync(RunningGame g)
     {
         _prompt?.Close();
+        var fps = StopFps(g);
         _trafficTimer?.Stop();
         _live?.Dispose();
         _live = null;
@@ -207,6 +212,7 @@ public partial class MainWindow
             catch (Exception ex) { GameActionsText.Text = Ui.Error(ex, Loc.T("Não deu para repor tudo: ")); }
         }
         else GameActionsText.Text = "";
+        if (fps != null) GameActionsText.Text = (GameActionsText.Text + "\n" + fps).TrimStart();
     }
 
     async Task StartGameSessionAsync()
@@ -317,7 +323,7 @@ public partial class MainWindow
                 if (_game is null) _overlay?.Hide();
             };
         }
-        _overlay.ShowWaiting(waiting);
+        _overlay.ShowWaiting(_game is { Detected: true } ? "" : waiting); // jogo detetado: sem servidor, só os FPS
         _overlay.Show();
     }
 

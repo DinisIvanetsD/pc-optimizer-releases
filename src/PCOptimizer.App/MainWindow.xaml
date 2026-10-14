@@ -1572,7 +1572,15 @@
                            Text="Deteta o jogo, mede a ligação ao servidor e otimiza o PC enquanto jogas."/>
                 <TextBlock x:Name="GameTitle" Text="Nenhum jogo aberto." FontWeight="SemiBold" FontSize="15"/>
                 <TextBlock x:Name="GameServerText" Style="{StaticResource Muted}" FontSize="12" Margin="0,2,0,0"/>
-                <UniformGrid x:Name="GameStatsGrid" Columns="4" Margin="0,10,0,0" Visibility="Collapsed">
+                <UniformGrid x:Name="GameStatsGrid" Columns="6" Margin="0,10,0,0" Visibility="Collapsed">
+                  <StackPanel Margin="0,0,8,0">
+                    <TextBlock Text="FPS" Style="{StaticResource Muted}" FontSize="12"/>
+                    <TextBlock x:Name="GameFps" Text="--" FontSize="22" FontWeight="SemiBold"/>
+                  </StackPanel>
+                  <StackPanel Margin="0,0,8,0">
+                    <TextBlock Text="1% low" Style="{StaticResource Muted}" FontSize="12"/>
+                    <TextBlock x:Name="GameLow1" Text="--" FontSize="22" FontWeight="SemiBold"/>
+                  </StackPanel>
                   <StackPanel Margin="0,0,8,0">
                     <TextBlock Text="Ping" Style="{StaticResource Muted}" FontSize="12"/>
                     <TextBlock x:Name="GamePing" Text="--" FontSize="22" FontWeight="SemiBold"/>

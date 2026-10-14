@@ -10,7 +10,7 @@ using PCOptimizer.Core.Util;
 namespace PCOptimizer.App;
 
 /// <summary>
-/// Indicador de ping/perda/jitter por cima do jogo. É uma janela normal, transparente e que deixa
+/// Indicador de FPS e ping/perda/jitter por cima do jogo. É uma janela normal, transparente e que deixa
 /// passar os cliques — não injeta nada no jogo, por isso não incomoda os anti-cheats. Não aparece
 /// em ecrã inteiro exclusivo (só em "sem bordas" ou janela).
 /// </summary>
@@ -45,11 +45,27 @@ public partial class GameOverlay : Window
         };
     }
 
+    /// <summary>"" esconde a parte da rede (jogos sem servidor: só os FPS).</summary>
     public void ShowWaiting(string text)
     {
         Text.Text = text;
         Dot.Fill = new SolidColorBrush(Color.FromRgb(0x7C, 0x87, 0x99));
+        Text.Visibility = Dot.Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        Fit();
     }
+
+    /// <summary>A parte dos FPS, à esquerda da rede (o texto traz o separador "│" quando a rede aparece). null ou "" esconde-a.</summary>
+    public void ShowFps(string? text)
+    {
+        FpsText.Text = text;
+        FpsText.Visibility = string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
+        Fit();
+    }
+
+    // sem nada para mostrar (jogo sem servidor e sem FPS) a caixa some, em vez de ficar vazia por cima do jogo
+    void Fit() =>
+        Box.Visibility = _moving || FpsText.Visibility == Visibility.Visible || Text.Visibility == Visibility.Visible
+            ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>Modo mover: deixa de ser "transparente aos cliques" para se poder arrastar.</summary>
     public void StartMoving()
@@ -59,6 +75,7 @@ public partial class GameOverlay : Window
         MoveHint.Visibility = Visibility.Visible;
         Box.BorderBrush = new SolidColorBrush(Color.FromRgb(0x4C, 0x8D, 0xFF));
         Cursor = Cursors.SizeAll;
+        Fit();
         Activate();
     }
 
@@ -69,6 +86,7 @@ public partial class GameOverlay : Window
         MoveHint.Visibility = Visibility.Collapsed;
         Box.BorderBrush = Brushes.Transparent;
         Cursor = null;
+        Fit();
         Moved?.Invoke(Left, Top);
     }
 
