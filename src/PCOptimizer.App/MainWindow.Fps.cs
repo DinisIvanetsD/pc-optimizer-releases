@@ -1,9 +1,28 @@
-﻿using System.Windows.Threading;
+﻿using System.Windows;
+using System.Windows.Threading;
 using PCOptimizer.Core.Benchmark;
 using PCOptimizer.Core.Gaming;
 using PCOptimizer.Core.Util;
 
 namespace PCOptimizer.App;
+
+/// <summary>Uma linha da lista "FPS por jogo".</summary>
+public sealed record FpsGameVm(string Name, string LastText, string AvgText, string PairText)
+{
+    public static FpsGameVm From(FpsGameSummary s)
+    {
+        var pair = "";
+        if (s.Before is { } b && s.After is { } a)
+        {
+            var c = FpsVerdict.Compare(b, a);
+            pair = Loc.T($"Antes {b.AvgFps:N0} → Depois {a.AvgFps:N0} ({c.AvgChangePct:+0;−0}%)") + (c.Outcome == FpsOutcome.Better ? " ✓" : "");
+        }
+        return new(s.Game,
+            s.Last is { } l ? Loc.T($"Última: {l.AvgFps:N0} FPS (1% {l.Low1Fps:N0})") : "",
+            s.Avg5 is { } avg5 ? Loc.T($"Média de 5: {avg5:N0}") : "",
+            pair);
+    }
+}
 
 public partial class MainWindow
 {
@@ -102,6 +121,36 @@ public partial class MainWindow
         return frames;
     }
 
-    /// <summary>Cartão "FPS por jogo".</summary>
-    void RefreshFpsCard() { }
+    /// <summary>Cartão "FPS por jogo": o acesso (ativar / terminar sessão), o botão de teste e a lista por jogo.</summary>
+    void RefreshFpsCard()
+    {
+        var access = PerfLogAccess.Current; // cria uma WindowsIdentity: ler só aqui, nunca num temporizador
+        FpsAccessButton.Visibility = access == FpsAccess.NeedsEnable ? Visibility.Visible : Visibility.Collapsed;
+        FpsAccessText.Text = access == FpsAccess.NeedsSignOut ? Loc.T("Termina sessão no Windows para ativar os FPS.") : "";
+        FpsTestButton.Visibility = _game != null && access == FpsAccess.Ready ? Visibility.Visible : Visibility.Collapsed;
+
+        var games = FpsHistory.Summaries().Select(FpsGameVm.From).ToList();
+        FpsGamesList.ItemsSource = games;
+        FpsEmptyText.Visibility = games.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    async void EnableFps_Click(object sender, RoutedEventArgs e)
+    {
+        if (!Confirm(Loc.T("Ativar a medição de FPS?\n\nO Windows vai pedir administrador uma vez para juntar o teu utilizador ao grupo \"Performance Log Users\". Esse grupo pode ler eventos de desempenho do sistema.\n\nDepois tens de terminar sessão no Windows. Dá para desfazer no Histórico."))) return;
+        FpsAccessButton.IsEnabled = false;
+        try
+        {
+            await PerfLogAccess.EnableAsync();
+            RefreshFpsCard();
+        }
+        catch (Exception ex) { FpsAccessText.Text = Ui.Error(ex); }
+        finally { FpsAccessButton.IsEnabled = true; }
+    }
+
+    // A Tarefa 9 (teste guiado, veredito e desfazer) preenche estes três.
+    void TestFps_Click(object sender, RoutedEventArgs e) { }
+
+    void FpsUndo_Click(object sender, RoutedEventArgs e) { }
+
+    void FpsKeep_Click(object sender, RoutedEventArgs e) { }
 }

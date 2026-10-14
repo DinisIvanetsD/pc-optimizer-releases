@@ -1963,5 +1963,17 @@
  "FPS": "FPS",
  "1% low": "1% low",
  "{0:N0} FPS · 1% {1:N0}": "{0:N0} FPS · 1% {1:N0}",
- "Sessão de {0:N0} min: {1:N0} FPS médios, 1% low {2:N0}, {3} engasgos.": "{0:N0} min session: {1:N0} FPS average, 1% low {2:N0}, {3} stutters."
+ "Sessão de {0:N0} min: {1:N0} FPS médios, 1% low {2:N0}, {3} engasgos.": "{0:N0} min session: {1:N0} FPS average, 1% low {2:N0}, {3} stutters.",
+ "Antes {0:N0} → Depois {1:N0} ({2:+0;−0}%)": "Before {0:N0} → After {1:N0} ({2:+0;−0}%)",
+ "Última: {0:N0} FPS (1% {1:N0})": "Last: {0:N0} FPS (1% {1:N0})",
+ "Média de 5: {0:N0}": "Average of 5: {0:N0}",
+ "Termina sessão no Windows para ativar os FPS.": "Sign out of Windows to enable FPS.",
+ "Ativar a medição de FPS?\n\nO Windows vai pedir administrador uma vez para juntar o teu utilizador ao grupo \"Performance Log Users\". Esse grupo pode ler eventos de desempenho do sistema.\n\nDepois tens de terminar sessão no Windows. Dá para desfazer no Histórico.": "Enable FPS measurement?\n\nWindows will ask for administrator rights once to add your user to the \"Performance Log Users\" group. That group can read system performance events.\n\nAfter that you need to sign out of Windows. You can undo this in History.",
+ "📈  FPS por jogo": "📈  FPS per game",
+ "Mede os FPS de cada jogo e prova se as otimizações ajudaram.": "Measures the FPS of each game and proves whether the optimizations helped.",
+ "🔒  Ativar medição de FPS": "🔒  Enable FPS measurement",
+ "⏱  Testar FPS": "⏱  Test FPS",
+ "Desfazer esses ajustes": "Undo those tweaks",
+ "Manter": "Keep",
+ "Joga um bocado: os FPS de cada sessão aparecem aqui.": "Play for a while: the FPS of each session shows up here."
 }

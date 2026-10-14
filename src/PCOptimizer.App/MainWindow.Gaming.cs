@@ -143,6 +143,7 @@ public partial class MainWindow
         _trafficTimer.Tick += (_, _) => UpdateGameServer();
         _trafficTimer.Start();
         StartFps(g);
+        RefreshFpsCard(); // mostra o botão "Testar FPS" (com acesso Ready)
         GameTraffic.Text = Admin.IsElevated ? "--" : Loc.T("só com admin");
         if (S.OverlayEnabled && !ScreenshotMode) ShowOverlay("A procurar o servidor…");
 
@@ -191,6 +192,7 @@ public partial class MainWindow
         _traffic = null;
         _server = null;
         _game = null;
+        RefreshFpsCard(); // o do StopFps correu com _game ainda definido: reavalia o botão "Testar FPS"
         _overlay?.Hide();
 
         GameTitle.Text = Loc.T("Nenhum jogo aberto.");

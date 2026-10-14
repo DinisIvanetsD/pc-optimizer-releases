@@ -767,7 +767,7 @@ public partial class MainWindow : Window
         if (Tabs.SelectedItem == HomeTab) RefreshHome();
         if (Tabs.SelectedItem == SettingsTab) { LoadSettingsPage(); UpdateInstallCard(); }
         if (Tabs.SelectedItem == StartupTab) _ = EnsureStartupTabLoadedAsync();
-        if (Tabs.SelectedItem == NetworkTab) _ = EnsureNetworkTabLoadedAsync();
+        if (Tabs.SelectedItem == NetworkTab) { _ = EnsureNetworkTabLoadedAsync(); RefreshFpsCard(); }
         if (Tabs.SelectedItem == AppsTab) _ = EnsureAppsTabLoadedAsync();
         if (Tabs.SelectedItem == DiagTab && RecHistory.ItemsSource is null) LoadRecordings();
         if (Tabs.SelectedItem == ComponentsTab) _ = EnsureComponentsLoadedAsync();

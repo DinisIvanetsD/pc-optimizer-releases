@@ -1612,6 +1612,48 @@
               </StackPanel>
             </Border>
 
+            <!-- FPS por jogo -->
+            <Border Style="{StaticResource Card}">
+              <StackPanel>
+                <TextBlock Text="📈  FPS por jogo" Style="{StaticResource H2}"/>
+                <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,10" TextWrapping="Wrap"
+                           Text="Mede os FPS de cada jogo e prova se as otimizações ajudaram."/>
+                <WrapPanel>
+                  <Button x:Name="FpsAccessButton" Content="🔒  Ativar medição de FPS" Click="EnableFps_Click" Style="{StaticResource PrimaryButton}"/>
+                  <TextBlock x:Name="FpsAccessText" VerticalAlignment="Center" Margin="0,0,10,0" Style="{StaticResource Muted}"/>
+                  <Button x:Name="FpsTestButton" Content="⏱  Testar FPS" Click="TestFps_Click" Visibility="Collapsed"/>
+                </WrapPanel>
+                <TextBlock x:Name="FpsTestStatus" Style="{StaticResource Muted}" Margin="0,8,0,0"/>
+                <Border x:Name="FpsVerdictBox" CornerRadius="8" Padding="12,10" Margin="0,12,0,0" BorderThickness="1" Visibility="Collapsed">
+                  <StackPanel>
+                    <TextBlock x:Name="FpsVerdictTitle" FontWeight="SemiBold" FontSize="15"/>
+                    <TextBlock x:Name="FpsVerdictText" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="19"/>
+                    <WrapPanel Margin="0,10,0,0">
+                      <Button x:Name="FpsUndoButton" Content="Desfazer esses ajustes" Click="FpsUndo_Click" Style="{StaticResource PrimaryButton}"/>
+                      <Button x:Name="FpsKeepButton" Content="Manter" Click="FpsKeep_Click"/>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+                <TextBlock x:Name="FpsEmptyText" Style="{StaticResource Muted}" Margin="0,10,0,0" Visibility="Collapsed"
+                           Text="Joga um bocado: os FPS de cada sessão aparecem aqui."/>
+                <ItemsControl x:Name="FpsGamesList" Margin="0,10,0,0">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid Margin="0,3">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="190"/><ColumnDefinition Width="230"/><ColumnDefinition Width="120"/><ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding LastText}" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Column="2" Text="{Binding AvgText}" Style="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Text="{Binding PairText}" TextWrapping="Wrap"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+
             <!-- Onde está o lag -->
             <Border Style="{StaticResource Card}">
               <StackPanel>

@@ -91,7 +91,7 @@ public partial class MainWindow
         else if (tab == SettingsTab) LoadSettingsPage();
         else if (tab == StorageTab) await LoadDrivesAsync();
         else if (tab == AppsTab) await Task.WhenAll(RefreshInstalledAppsAsync(), RefreshBloatAsync());
-        else if (tab == NetworkTab) { await RefreshQosAsync(); RefreshSyncStatus(); }
+        else if (tab == NetworkTab) { await RefreshQosAsync(); RefreshSyncStatus(); RefreshFpsCard(); }
         else if (tab == ComponentsTab) await LoadComponentsAsync();
     }
 
