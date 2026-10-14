@@ -32,6 +32,9 @@ public static class PerfLogAccess
 
     static string Script(string userSid, string negate, string verb)
     {
+        // corre elevado e o SID pode vir do history.json (editável): só passa um SID de verdade, já normalizado.
+        // Shell.Quote não chega, porque as aspas curvas (U+2018–U+201B) também fecham um texto entre aspas simples.
+        userSid = new SecurityIdentifier(userSid).Value;
         var group = Shell.Quote(GroupSid);
         var user = Shell.Quote(userSid);
         return $"$ErrorActionPreference='Stop'; if ({negate}(Get-LocalGroupMember -SID {group} | Where-Object {{ $_.SID.Value -eq {user} }})) " +
@@ -66,8 +69,11 @@ public static class PerfLogAccess
     {
         if (Admin.IsElevated) return (await Shell.PowerShellAsync(script)).Ok;
         var args = "-NoProfile -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+        // tempo longo como no Winget.UninstallAsync: se acabasse com o pedido de administrador ainda aberto, aprovar
+        // mais tarde mudava o grupo sem entrada no Histórico
         var r = await Shell.PowerShellAsync(
-            $"(Start-Process powershell -ArgumentList {Shell.Quote(args)} -Verb RunAs -Wait -PassThru -WindowStyle Hidden).ExitCode");
+            $"(Start-Process powershell -ArgumentList {Shell.Quote(args)} -Verb RunAs -Wait -PassThru -WindowStyle Hidden).ExitCode",
+            30 * 60_000);
         return r.Ok && r.StdOut.Trim() == "0";
     }
 }

@@ -127,4 +127,13 @@ public class FpsTests
         Assert.DoesNotContain("Performance Log Users", add);
         Assert.Contains("Remove-LocalGroupMember", PerfLogAccess.RemoveScript("S-1-5-21-1-2-3-1001"));
     }
+
+    [Fact]
+    public void Script_rejeita_um_SID_que_nao_e_SID()
+    {
+        // as aspas curvas (U+2019) também fecham um texto entre aspas simples no PowerShell
+        const string injecao = "S-1-5-21-1’; Write-Output x; ’";
+        Assert.Throws<ArgumentException>(() => PerfLogAccess.RemoveScript(injecao));
+        Assert.Throws<ArgumentException>(() => PerfLogAccess.AddScript(injecao));
+    }
 }
