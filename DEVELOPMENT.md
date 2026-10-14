@@ -82,5 +82,7 @@ Outros comandos: `tweaks`, `startup`, `net [host]`, `dns`, `bloat`, `leak`, `mon
 
 - Capturas de ecrã: `PCOptimizer.exe --screenshots <pasta> [--only <NomeDaAba>]`.
 - Para testar sem mexer nos dados reais: `PCOPT_HISTORY_FILE`, `PCOPT_SETTINGS_FILE`, `PCOPT_METRICS_FILE`.
-- Versões: subir `<Version>` em `PCOptimizer.App.csproj` e correr `build\publish.ps1 -Release`.
+- Versões: subir `<Version>` em `PCOptimizer.App.csproj`, escrever as novidades no `CHANGELOG.md` e enviar a tag
+  (`git tag v0.9.4` e `git push origin v0.9.4`): o GitHub Actions testa, faz o ZIP e cria a Release.
+  Sem a tag, `build\publish.ps1 -Release` faz o mesmo no PC (precisa do gh com login).
   O atualizador só vê as Releases se o repositório for público.

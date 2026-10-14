@@ -32,6 +32,51 @@ public class ComponentsTests
     }
 }
 
+public class BatteryTests
+{
+    static BatteryInfo B(long designed, long full) => new("b", "", designed, full, 90, 0, true, false);
+
+    [Fact]
+    public void Health_is_full_capacity_over_design()
+    {
+        Assert.Equal(101, Battery.HealthPercent(84000, 84470)); // nova pode passar um pouco dos 100%
+        Assert.Equal(75, Battery.HealthPercent(80000, 60000));
+        Assert.Null(Battery.HealthPercent(0, 60000));            // o portátil não diz a de fábrica
+    }
+
+    [Fact]
+    public void Warns_only_when_the_battery_is_worn()
+    {
+        Assert.Null(Battery.Warning(B(84000, 84470)));
+        Assert.Null(Battery.Warning(B(80000, 68000)));  // 85%
+        Assert.NotNull(Battery.Warning(B(80000, 60000))); // 75%
+        Assert.NotNull(Battery.Warning(B(80000, 40000))); // 50%
+        Assert.Null(Battery.Warning(B(0, 0)));
+    }
+
+    [Fact]
+    public void Lists_batteries_without_failing() => Assert.NotNull(Battery.List()); // num PC de secretária a lista vem vazia
+}
+
+public class CpuThermalTests
+{
+    [Fact]
+    public void Warns_on_heat_and_on_limits()
+    {
+        Assert.Null(CpuThermal.Warning(new(2.5, 100, 100, false, 60)));
+        Assert.Contains("98", CpuThermal.Warning(new(1.2, 100, 70, true, 98))!);
+        Assert.NotNull(CpuThermal.Warning(new(1.2, 100, 70, true, null)));
+        Assert.NotNull(CpuThermal.Warning(new(1.0, 50, 100, false, null)));
+    }
+
+    [Fact]
+    public void Reads_this_pc_without_failing()
+    {
+        var s = CpuThermal.Read(2.0);
+        Assert.InRange(s.LimitPercent, 0, 100);
+    }
+}
+
 public class SensorsTests
 {
     [Fact]

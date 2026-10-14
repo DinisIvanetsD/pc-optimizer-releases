@@ -310,6 +310,17 @@ switch (cmd)
         break;
     }
 
+    case "parts":
+    {
+        foreach (var c in await PCOptimizer.Core.Hardware.Components.ListAsync())
+        {
+            Console.WriteLine($"{c.Kind}: {c.Name}");
+            foreach (var (label, value) in c.Details) Console.WriteLine($"  {label}: {value}");
+            if (c.Warning != null) Console.WriteLine($"  ! {c.Warning}");
+            if (c.Note != null) Console.WriteLine($"  i {c.Note}");
+        }
+        break;
+    }
     case "disk":
     {
         foreach (var d in await PCOptimizer.Core.Storage.StorageDrives.ListAsync())

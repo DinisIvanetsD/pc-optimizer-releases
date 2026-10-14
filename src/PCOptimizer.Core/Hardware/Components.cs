@@ -23,6 +23,7 @@ public static class Components
             Board(list);
             Disks(list);
             Network(list);
+            Batteries(list);
             Fans(list, sensors);
             return list;
         });
@@ -30,11 +31,41 @@ public static class Components
 
     static void Cpu(List<Component> list) =>
         Wmi.Each("SELECT Name, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed FROM Win32_Processor", o =>
-            list.Add(new(Loc.T("Processador"), "🧠", o["Name"]?.ToString()?.Trim() ?? "CPU", new[]
+        {
+            var baseGHz = Convert.ToDouble(o["MaxClockSpeed"]) / 1000;
+            var s = CpuThermal.Read(baseGHz);
+            var details = new List<(string, string)>
             {
                 (Loc.T("Núcleos"), Loc.T($"{o["NumberOfCores"]} ({o["NumberOfLogicalProcessors"]} threads)")),
-                (Loc.T("Velocidade base"), $"{Convert.ToDouble(o["MaxClockSpeed"]) / 1000:0.0#} GHz"),
-            })));
+                (Loc.T("Velocidade base"), $"{baseGHz:0.0#} GHz"),
+            };
+            if (s.SpeedGHz is double now) details.Add((Loc.T("Velocidade agora"), $"{now:0.0#} GHz"));
+            if (s.TempC is int t) details.Add((Loc.T("Temperatura"), $"{t} °C"));
+            details.Add((Loc.T("Abrandar por calor"), s.ThermalThrottling ? Loc.T("⚠ Sim, agora") : Loc.T("✓ Não")));
+            string? note = s.TempC is null
+                ? Loc.T("A temperatura do processador só se lê com o driver PawnIO (pawnio.eu) e a app aberta como administrador. A app não o instala sozinha.")
+                : null;
+            list.Add(new(Loc.T("Processador"), "🧠", o["Name"]?.ToString()?.Trim() ?? "CPU", details, CpuThermal.Warning(s), note));
+        });
+
+    static void Batteries(List<Component> list)
+    {
+        foreach (var b in Battery.List())
+        {
+            var details = new List<(string, string)>();
+            if (Battery.HealthPercent(b.DesignedMWh, b.FullMWh) is int h) details.Add((Loc.T("Saúde"), Battery.HealthText(h)));
+            if (b.DesignedMWh > 0) details.Add((Loc.T("Capacidade de fábrica"), $"{b.DesignedMWh / 1000.0:0.#} Wh"));
+            if (b.FullMWh > 0) details.Add((Loc.T("Capacidade agora"), $"{b.FullMWh / 1000.0:0.#} Wh"));
+            details.Add((Loc.T("Ciclos de carga"), b.Cycles > 0 ? b.Cycles.ToString() : Loc.T("o portátil não diz")));
+            if (b.FullMWh > 0 && b.RemainingMWh > 0)
+            {
+                var pct = Math.Min(100, (int)Math.Round(100.0 * b.RemainingMWh / b.FullMWh));
+                details.Add((Loc.T("Carga"), $"{pct}% · " + (b.Charging ? Loc.T("a carregar") : b.OnAc ? Loc.T("ligado à tomada") : Loc.T("na bateria"))));
+            }
+            var name = string.Join(" ", new[] { b.Maker, b.Name }.Where(x => x.Length > 0));
+            list.Add(new(Loc.T("Bateria"), "🔋", name, details, Battery.Warning(b)));
+        }
+    }
 
     static void Gpu(List<Component> list, List<GpuSensor> sensors)
     {

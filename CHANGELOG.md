@@ -1,5 +1,13 @@
 ﻿# Novidades
 
+## 0.9.4
+- **Bateria** (Componentes): saúde em relação à capacidade de fábrica, ciclos de carga e carga atual, com aviso
+  quando já está gasta. Lê o driver de bateria do Windows, sem administrador.
+- **Processador** (Componentes): velocidade real agora e se está a abrandar por calor (zonas térmicas do Windows),
+  com conselhos. A temperatura aparece com a app como administrador e o driver PawnIO instalado.
+- **Ventoinhas**: o cartão já não repete o título e explica numa nota onde as ver.
+- Versões publicadas sozinhas pelo GitHub Actions ao enviar uma tag (vX.Y.Z).
+
 ## 0.9.3
 - Corrige um erro ao abrir a janela pelo ícone da barra de tarefas depois de ela ter fechado.
 - Código-fonte público em github.com/DinisIvanetsD/rigwise, com licença MIT.

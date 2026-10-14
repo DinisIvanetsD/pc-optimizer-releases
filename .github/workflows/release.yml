@@ -1,0 +1,47 @@
+name: Publicar versão
+
+# Ao enviar uma tag vX.Y.Z (ex.: git tag v0.9.4 && git push origin v0.9.4) cria a Release com o ZIP
+# que o atualizador da app descarrega. Faz o mesmo que o build/publish.ps1 -Release, mas sem precisar do gh no PC.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Testes
+        run: dotnet test tests/PCOptimizer.Tests -c Release
+
+      - name: ZIP da app
+        shell: pwsh
+        run: |
+          $app = "publish/PC Optimizer"
+          dotnet publish src/PCOptimizer.App -c Release -r win-x64 --self-contained true -o $app
+          if ($LASTEXITCODE -ne 0) { throw 'O publish falhou.' }
+          $full = (Resolve-Path $app).Path
+          Get-ChildItem $app -Recurse -File -Exclude *.pdb | ForEach-Object { $_.FullName.Substring($full.Length + 1) } | Set-Content "$app/files.txt" -Encoding utf8
+          Get-ChildItem $app -Recurse -Filter *.pdb | Remove-Item
+          Compress-Archive -Path $app -DestinationPath publish/PCOptimizer-win-x64.zip
+          # a versão da app tem de ser a da tag: senão o atualizador anunciava uma versão e instalava outra
+          $version = (Get-Item "$app/PCOptimizer.exe").VersionInfo.ProductVersion -replace '\+.*$', ''
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "A tag ${{ github.ref_name }} não bate com a versão da app ($version)." }
+          $log = Get-Content CHANGELOG.md -Raw -Encoding UTF8
+          $m = [regex]::Match($log, "(?ms)^## $([regex]::Escape($version))\b[^\r\n]*\r?\n(.*?)(?=^## |\z)")
+          [IO.File]::WriteAllText("publish/notas.md", $(if ($m.Success) { $m.Groups[1].Value.Trim() } else { "Rigwise $version" }))
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" publish/PCOptimizer-win-x64.zip --title "Rigwise $env:VERSION" --notes-file publish/notas.md
