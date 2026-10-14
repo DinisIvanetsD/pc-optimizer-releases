@@ -18,7 +18,12 @@ public sealed class GameSessionState
     /// <summary>Valores da pausa do Windows Update antes da sessão (null = não existia). Null = não mexemos.</summary>
     public Dictionary<string, string?>? PreviousPause { get; set; }
     public List<string> ClosedApps { get; set; } = new(); // caminhos completos, para voltar a abrir
+    /// <summary>Torrents suspensos: PID + hora de arranque (para não retomar outro processo com o mesmo PID).</summary>
+    public List<SuspendedProcess> SuspendedApps { get; set; } = new();
+    public bool GamePriorityRaised { get; set; }
 }
+
+public sealed record SuspendedProcess(int Pid, long StartTicks);
 
 /// <summary>
 /// Otimizações só enquanto se joga: prioridade de rede para o jogo, plano de energia máximo,
@@ -41,6 +46,17 @@ public static class GameSession
     {
         ("OneDrive", "OneDrive"), ("Dropbox", "Dropbox"), ("GoogleDriveFS", "Google Drive"), ("MEGAsync", "MEGA"),
     };
+    // torrents enchem a upload e a download: são a causa nº 1 de ping alto em casa. Suspensos, não fechados.
+    static readonly (string Process, string Label)[] TorrentApps =
+    {
+        ("qbittorrent", "qBittorrent"), ("utorrent", "µTorrent"), ("utweb", "µTorrent Web"), ("BitTorrent", "BitTorrent"),
+        ("deluge", "Deluge"), ("transmission-qt", "Transmission"), ("tixati", "Tixati"), ("fdm", "Free Download Manager"),
+    };
+    // planos que já são "máximo": o Desempenho Máximo do Windows e a cópia que a app cria
+    static readonly string[] MaxSchemes = { HighPerformance, "e9a42b02-d5df-448d-aa00-03f14749eb61", "3ff9831b-6f80-4830-8178-736cd4229e7b" };
+
+    [System.Runtime.InteropServices.DllImport("ntdll.dll")] static extern int NtSuspendProcess(IntPtr handle);
+    [System.Runtime.InteropServices.DllImport("ntdll.dll")] static extern int NtResumeProcess(IntPtr handle);
 
     static string StateFile => Environment.GetEnvironmentVariable("PCOPT_GAMESESSION_FILE")
                                ?? Path.Combine(AppSettings.DataFolder, "game-session.json");
@@ -71,7 +87,7 @@ public static class GameSession
 
         // plano de energia máximo (não precisa de administrador)
         var current = await ActiveSchemeAsync();
-        if (current != null && !current.Equals(HighPerformance, StringComparison.OrdinalIgnoreCase))
+        if (current != null && !MaxSchemes.Contains(current, StringComparer.OrdinalIgnoreCase))
         {
             var r = await Shell.RunAsync("powercfg.exe", "/setactive SCHEME_MIN");
             if (r.ExitCode == 0)
@@ -81,6 +97,38 @@ public static class GameSession
             }
         }
         Save(state);
+
+        // prioridade alta de CPU para o jogo: a thread de rede do jogo não espera por apps de fundo
+        try
+        {
+            using var gp = Process.GetProcessById(game.Pid);
+            if (gp.PriorityClass is ProcessPriorityClass.Normal or ProcessPriorityClass.BelowNormal or ProcessPriorityClass.Idle)
+            {
+                gp.PriorityClass = ProcessPriorityClass.High;
+                state.GamePriorityRaised = true;
+                done.Add(Loc.T("Jogo com prioridade alta"));
+            }
+        }
+        catch { } // jogos com anti-cheat podem recusar
+        Save(state);
+
+        // torrents/gestores de downloads em pausa: libertam a ligação toda para o jogo
+        var paused = new List<string>();
+        foreach (var (process, label) in TorrentApps)
+            foreach (var p in Process.GetProcessesByName(process))
+                using (p)
+                {
+                    try
+                    {
+                        var entry = new SuspendedProcess(p.Id, p.StartTime.Ticks);
+                        if (NtSuspendProcess(p.Handle) != 0) continue;
+                        state.SuspendedApps.Add(entry);
+                        Save(state);
+                        if (!paused.Contains(label)) paused.Add(label);
+                    }
+                    catch { }
+                }
+        if (paused.Count > 0) done.Add(Loc.T($"Downloads em pausa ({string.Join(", ", paused)})"));
 
         if (Admin.IsElevated)
         {
@@ -154,6 +202,23 @@ public static class GameSession
 
         if (s.PreviousPowerScheme is string scheme && Regex.IsMatch(scheme, "^[0-9a-fA-F-]{36}$"))
             await Shell.RunAsync("powercfg.exe", $"/setactive {scheme}");
+
+        foreach (var sp in s.SuspendedApps)
+            try
+            {
+                using var p = Process.GetProcessById(sp.Pid);
+                if (p.StartTime.Ticks == sp.StartTicks) NtResumeProcess(p.Handle);
+            }
+            catch { } // já fechou
+        s.SuspendedApps.Clear();
+
+        if (s.GamePriorityRaised)
+            try
+            {
+                using var gp = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(s.Exe)).FirstOrDefault();
+                if (gp != null) gp.PriorityClass = ProcessPriorityClass.Normal;
+            }
+            catch { }
 
         if (Admin.IsElevated)
         {

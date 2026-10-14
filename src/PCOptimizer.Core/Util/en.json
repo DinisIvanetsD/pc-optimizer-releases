@@ -1171,6 +1171,8 @@
  "Prioridade alta para jogos (MMCSS)": "High priority for games (MMCSS)",
  "Prioridade de rede (QoS) para {0}": "Network priority (QoS) for {0}",
  "Prioridade de rede para o jogo": "Network priority for the game",
+ "Jogo com prioridade alta": "Game set to high priority",
+ "Downloads em pausa ({0})": "Downloads paused ({0})",
  "Prioridade de rede para um jogo (se o router suportar QoS).": "Network priority for a game (if your router supports QoS).",
  "Prioridade de {0} removida.": "Priority removed from {0}.",
  "Privacidade": "Privacy",
