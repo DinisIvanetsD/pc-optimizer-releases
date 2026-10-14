@@ -18,6 +18,7 @@
   <ItemGroup>
     <Resource Include="app.ico" />
     <Resource Include="logo.png" />
+    <None Include="tools\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
