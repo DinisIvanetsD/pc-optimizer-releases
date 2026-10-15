@@ -4,7 +4,7 @@
         Title="Rigwise overlay" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" ShowActivated="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight"
         Focusable="False">
-  <Border x:Name="Box" Background="#B0101318" CornerRadius="8" Padding="10,5" BorderThickness="1" BorderBrush="Transparent">
+  <Border x:Name="Box" Background="#B00B0B0C" CornerRadius="8" Padding="10,5" BorderThickness="1" BorderBrush="Transparent">
     <StackPanel Orientation="Horizontal">
       <TextBlock x:Name="FpsText" Foreground="White" FontSize="13" FontFamily="Segoe UI Semibold" VerticalAlignment="Center" Visibility="Collapsed"/>
       <Ellipse x:Name="Dot" Width="9" Height="9" Fill="#7C8799" VerticalAlignment="Center" Margin="0,0,8,0"/>

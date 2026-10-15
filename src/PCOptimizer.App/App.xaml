@@ -4,17 +4,17 @@
              xmlns:local="clr-namespace:PCOptimizer.App">
   <Application.Resources>
     <!-- ================= Paleta ================= -->
-    <SolidColorBrush x:Key="BgBrush" Color="#0E1014"/>
-    <SolidColorBrush x:Key="PanelBrush" Color="#13161C"/>
-    <SolidColorBrush x:Key="CardBrush" Color="#1A1E26"/>
-    <SolidColorBrush x:Key="CardHoverBrush" Color="#1F2430"/>
-    <SolidColorBrush x:Key="InputBrush" Color="#11141A"/>
-    <SolidColorBrush x:Key="LineBrush" Color="#262B35"/>
-    <SolidColorBrush x:Key="TextBrush" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="MutedBrush" Color="#9AA3AF"/>
-    <SolidColorBrush x:Key="FaintBrush" Color="#6B7280"/>
-    <SolidColorBrush x:Key="AccentBrush" Color="#8B5CF6"/>
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="#2A1F47"/>
+    <SolidColorBrush x:Key="BgBrush" Color="#0B0B0C"/>
+    <SolidColorBrush x:Key="PanelBrush" Color="#111113"/>
+    <SolidColorBrush x:Key="CardBrush" Color="#17171A"/>
+    <SolidColorBrush x:Key="CardHoverBrush" Color="#1E1E22"/>
+    <SolidColorBrush x:Key="InputBrush" Color="#0F0F11"/>
+    <SolidColorBrush x:Key="LineBrush" Color="#2A2A2F"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#EDEDED"/>
+    <SolidColorBrush x:Key="MutedBrush" Color="#9A9A9F"/>
+    <SolidColorBrush x:Key="FaintBrush" Color="#6B6B70"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#F2F2F2"/>
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#232326"/>
     <SolidColorBrush x:Key="OkBrush" Color="#3DD68C"/>
     <SolidColorBrush x:Key="WarnBrush" Color="#FFB020"/>
     <SolidColorBrush x:Key="CritBrush" Color="#FF5C5C"/>
@@ -34,7 +34,7 @@
       <Style.Triggers>
         <!-- destaque discreto ao passar o rato (sem animação: fica fluido mesmo com muitos cartões) -->
         <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="BorderBrush" Value="#3F3460"/>
+          <Setter Property="BorderBrush" Value="#3A3A40"/>
         </Trigger>
       </Style.Triggers>
     </Style>
@@ -72,7 +72,7 @@
     <!-- ================= Botões ================= -->
     <Style TargetType="Button">
       <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-      <Setter Property="Background" Value="#262C38"/>
+      <Setter Property="Background" Value="#232326"/>
       <Setter Property="BorderBrush" Value="Transparent"/>
       <Setter Property="Padding" Value="14,8"/>
       <Setter Property="Margin" Value="0,0,8,0"/>
@@ -145,7 +145,7 @@
     </Style>
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
       <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="Foreground" Value="#0B0B0C"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -164,7 +164,7 @@
           <ControlTemplate TargetType="RadioButton">
             <!-- pílula arredondada: o fundo da página atual e o do rato aparecem/desaparecem com uma animação curta -->
             <Grid Margin="2,7">
-              <Border x:Name="sel" CornerRadius="10" Background="{StaticResource AccentSoftBrush}" BorderBrush="#4A3A7A" BorderThickness="1" Opacity="0"/>
+              <Border x:Name="sel" CornerRadius="10" Background="{StaticResource AccentSoftBrush}" BorderBrush="#3A3A40" BorderThickness="1" Opacity="0"/>
               <Border x:Name="hov" CornerRadius="10" Background="White" Opacity="0"/>
               <ContentPresenter Margin="14,7" VerticalAlignment="Center"/>
             </Grid>
@@ -294,7 +294,7 @@
         <Setter.Value>
           <ControlTemplate TargetType="Thumb">
             <Grid Width="32" Height="32" Background="Transparent">
-              <Ellipse x:Name="halo" Width="32" Height="32" Fill="#408B5CF6" Visibility="Collapsed"/>
+              <Ellipse x:Name="halo" Width="32" Height="32" Fill="#40F2F2F2" Visibility="Collapsed"/>
               <Ellipse x:Name="knob" Width="22" Height="22" Fill="White" Stroke="{StaticResource AccentBrush}" StrokeThickness="4">
                 <Ellipse.Effect>
                   <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.5"/>
@@ -365,7 +365,7 @@
                     <RepeatButton.Template>
                       <ControlTemplate TargetType="RepeatButton">
                         <Grid Background="Transparent">
-                          <Border Height="10" CornerRadius="0,5,5,0" Background="#C80E1014" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                          <Border Height="10" CornerRadius="0,5,5,0" Background="#C80B0B0C" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         </Grid>
                       </ControlTemplate>
                     </RepeatButton.Template>
@@ -492,10 +492,10 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Thumb">
-            <Border x:Name="t" CornerRadius="4" Background="#343B49"/>
+            <Border x:Name="t" CornerRadius="4" Background="#3A3A40"/>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="t" Property="Background" Value="#4A5366"/>
+                <Setter TargetName="t" Property="Background" Value="#55555C"/>
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>

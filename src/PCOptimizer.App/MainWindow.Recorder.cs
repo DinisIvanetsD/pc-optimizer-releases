@@ -121,7 +121,7 @@ public partial class MainWindow
             if (line.Points.Count > 1) RecChart.Children.Add(line);
         }
 
-        Line("#8B5CF6", x => x.Cpu);
+        Line("#F2F2F2", x => x.Cpu);
         Line("#FFB020", x => x.Disk);
         Line("#3DD68C", x => x.GpuLoad);
         Line("#4FC3F7", x => x.PingMs is int p ? 100.0 * p / pingMax : null);

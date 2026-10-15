@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Rigwise" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" ShowActivated="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
-  <Border Background="{StaticResource CardBrush}" BorderBrush="#3B2A63" BorderThickness="1" CornerRadius="10" Padding="16,14" Width="380">
+  <Border Background="{StaticResource CardBrush}" BorderBrush="#2E2E33" BorderThickness="1" CornerRadius="10" Padding="16,14" Width="380">
     <StackPanel>
       <TextBlock x:Name="HeaderText" Text="🎮  Jogo detetado" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" FontSize="15"/>
       <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,12"

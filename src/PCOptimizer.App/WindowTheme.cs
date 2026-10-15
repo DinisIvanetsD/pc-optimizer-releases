@@ -10,7 +10,7 @@ public static class WindowTheme
     const int DwmwaUseImmersiveDarkMode = 20;
     const int DwmwaCaptionColor = 35;   // só Windows 11
     const int DwmwaBorderColor = 34;    // só Windows 11
-    const int PanelColor = 0x001C1613;  // #13161C em formato COLORREF (0x00BBGGRR)
+    const int PanelColor = 0x00131111;  // #111113 em formato COLORREF (0x00BBGGRR)
 
     [DllImport("dwmapi.dll")]
     static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);

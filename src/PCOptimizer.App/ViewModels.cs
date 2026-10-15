@@ -34,10 +34,10 @@ public static class Palette
 
     public static readonly SolidColorBrush Critical = Make("#FF5C5C");
     public static readonly SolidColorBrush Warning = Make("#FFB020");
-    public static readonly SolidColorBrush Info = Make("#A78BFA");
+    public static readonly SolidColorBrush Info = Make("#C9C9CE");
     public static readonly SolidColorBrush Ok = Make("#3DD68C");
-    public static readonly SolidColorBrush Muted = Make("#9AA3AF");
-    public static readonly SolidColorBrush Neutral = Make("#2A2F3A");
+    public static readonly SolidColorBrush Muted = Make("#9A9A9F");
+    public static readonly SolidColorBrush Neutral = Make("#2A2A2F");
 
     public static SolidColorBrush For(Severity s) => s switch
     {

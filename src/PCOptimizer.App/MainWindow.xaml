@@ -335,7 +335,7 @@
                 <DockPanel Margin="0,0,0,6">
                   <ComboBox x:Name="RecHistory" DockPanel.Dock="Right" Width="210" SelectionChanged="RecHistory_Changed"/>
                   <WrapPanel VerticalAlignment="Center">
-                    <TextBlock Text="━ CPU  " Foreground="#8B5CF6" FontSize="12"/>
+                    <TextBlock Text="━ CPU  " Foreground="#F2F2F2" FontSize="12"/>
                     <TextBlock Text="━ Disco  " Foreground="#FFB020" FontSize="12"/>
                     <TextBlock Text="━ GPU  " Foreground="#3DD68C" FontSize="12"/>
                     <TextBlock Text="━ Ping" Foreground="#4FC3F7" FontSize="12"/>
@@ -474,7 +474,7 @@
                 <ControlTemplate TargetType="ToggleButton">
                   <Border x:Name="b" CornerRadius="10" Padding="10,8" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
                     <DockPanel>
-                      <Border x:Name="mono" DockPanel.Dock="Left" Width="30" Height="30" CornerRadius="8" Background="#232A36" Margin="0,0,10,0">
+                      <Border x:Name="mono" DockPanel.Dock="Left" Width="30" Height="30" CornerRadius="8" Background="#232326" Margin="0,0,10,0">
                         <Grid>
                           <TextBlock x:Name="monoText" Text="{Binding Initial}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource MutedBrush}"
                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -1451,7 +1451,7 @@
             </Border>
 
             <!-- Estabilizador -->
-            <Border Style="{StaticResource Card}" BorderBrush="#3B2A63">
+            <Border Style="{StaticResource Card}" BorderBrush="#2E2E33">
               <StackPanel>
                 <DockPanel>
                   <Border DockPanel.Dock="Right" x:Name="XmpBadge" Style="{StaticResource Badge}" Padding="10,3" Margin="0">
@@ -1561,7 +1561,7 @@
           <StackPanel Margin="0,0,16,16">
 
             <!-- Modo jogo -->
-            <Border Style="{StaticResource Card}" BorderBrush="#3B2A63">
+            <Border Style="{StaticResource Card}" BorderBrush="#2E2E33">
               <StackPanel>
                 <DockPanel>
                   <Border DockPanel.Dock="Right" Style="{StaticResource Badge}" Padding="10,3" Margin="0">
@@ -1685,7 +1685,7 @@
               </DockPanel>
             </Border>
 
-            <Border Style="{StaticResource Card}" BorderBrush="#3B2A63">
+            <Border Style="{StaticResource Card}" BorderBrush="#2E2E33">
               <StackPanel>
                 <DockPanel>
                   <Border DockPanel.Dock="Right" x:Name="WatchBadge" Style="{StaticResource Badge}" Padding="10,3" Margin="0">
@@ -1743,19 +1743,19 @@
                   <TextBlock x:Name="NetStatus" VerticalAlignment="Center" Style="{StaticResource Muted}"/>
                 </WrapPanel>
                 <UniformGrid Columns="3" Margin="0,12,0,0">
-                  <Border Style="{StaticResource Card}" Background="#161920" Margin="0,0,8,0">
+                  <Border Style="{StaticResource Card}" Background="#141416" Margin="0,0,8,0">
                     <StackPanel>
                       <TextBlock x:Name="RouterLabel" Text="🏠 Router" Style="{StaticResource Muted}"/>
                       <TextBlock x:Name="RouterStat" Text="—" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </StackPanel>
                   </Border>
-                  <Border Style="{StaticResource Card}" Background="#161920" Margin="0,0,8,0">
+                  <Border Style="{StaticResource Card}" Background="#141416" Margin="0,0,8,0">
                     <StackPanel>
                       <TextBlock Text="🌍 Internet (Cloudflare)" Style="{StaticResource Muted}"/>
                       <TextBlock x:Name="InternetStat" Text="—" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </StackPanel>
                   </Border>
-                  <Border Style="{StaticResource Card}" Background="#161920" Margin="0">
+                  <Border Style="{StaticResource Card}" Background="#141416" Margin="0">
                     <StackPanel>
                       <TextBlock x:Name="GameLabel" Text="🎮 Servidor" Style="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
                       <TextBlock x:Name="GameStat" Text="—" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
@@ -1980,7 +1980,7 @@
 
           <!-- O que mudou? crashes, drivers, atualizações, programas e alterações do Rigwise numa linha do tempo -->
           <DockPanel x:Name="TimelinePanel" Visibility="Collapsed">
-            <Border x:Name="SuspectsCard" DockPanel.Dock="Top" Style="{StaticResource Card}" BorderBrush="#3B2A63" Visibility="Collapsed">
+            <Border x:Name="SuspectsCard" DockPanel.Dock="Top" Style="{StaticResource Card}" BorderBrush="#2E2E33" Visibility="Collapsed">
               <StackPanel>
                 <TextBlock Text="🔎  Vale a pena investigar" Style="{StaticResource H2}"/>
                 <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,0,0,8"

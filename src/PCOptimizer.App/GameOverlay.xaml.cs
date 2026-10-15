@@ -73,7 +73,7 @@ public partial class GameOverlay : Window
         _moving = true;
         SetClickThrough(false);
         MoveHint.Visibility = Visibility.Visible;
-        Box.BorderBrush = new SolidColorBrush(Color.FromRgb(0x4C, 0x8D, 0xFF));
+        Box.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF2, 0xF2, 0xF2));
         Cursor = Cursors.SizeAll;
         Fit();
         Activate();
