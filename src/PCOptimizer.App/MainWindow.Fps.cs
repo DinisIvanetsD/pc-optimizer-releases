@@ -139,6 +139,7 @@ public partial class MainWindow
         FpsAccessButton.Visibility = access == FpsAccess.NeedsEnable ? Visibility.Visible : Visibility.Collapsed;
         FpsAccessText.Text = access == FpsAccess.NeedsSignOut ? Loc.T("Termina sessão no Windows para ativar os FPS.") : "";
         FpsTestButton.Visibility = _game != null && access == FpsAccess.Ready ? Visibility.Visible : Visibility.Collapsed;
+        FpsGameText.Text = _game?.Game.Name ?? Loc.T("Nenhum jogo aberto.");
 
         // o último veredito sobrevive a reabrir a app (o Desfazer pode pedir para reabrir como administrador);
         // durante um teste fica escondido

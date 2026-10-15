@@ -479,7 +479,7 @@ public partial class MainWindow : Window
         var list = string.Join("\n", selected.Select(t => $"• {t.Name}" + (t.Tweak.Risk == Risk.High ? Loc.T("  ⚠ RISCO ALTO") : "")));
         // perfil Gaming sem nenhum teste Antes: sugere medir primeiro (não bloqueia)
         var fpsHint = _currentProfile.Profile.Id == "gaming" && !FpsHistory.All.Any(r => r.Role == FpsRole.Before)
-            ? Loc.T("\n\nDica: mede os FPS antes (Rede › FPS por jogo) para provar o ganho.") : "";
+            ? Loc.T("\n\nDica: mede os FPS antes (aba FPS) para provar o ganho.") : "";
         if (!Confirm(Loc.T($"Vou aplicar {selected.Count} ajuste(s) do perfil {_currentProfile.Name}:\n\n{list}\n\n") +
                      Loc.T("Guardo o estado atual de cada um, por isso podes reverter tudo depois. Continuar?") + fpsHint))
             return;
@@ -771,7 +771,8 @@ public partial class MainWindow : Window
         if (Tabs.SelectedItem == HomeTab) RefreshHome();
         if (Tabs.SelectedItem == SettingsTab) { LoadSettingsPage(); UpdateInstallCard(); }
         if (Tabs.SelectedItem == StartupTab) _ = EnsureStartupTabLoadedAsync();
-        if (Tabs.SelectedItem == NetworkTab) { _ = EnsureNetworkTabLoadedAsync(); RefreshFpsCard(); }
+        if (Tabs.SelectedItem == NetworkTab) _ = EnsureNetworkTabLoadedAsync();
+        if (Tabs.SelectedItem == FpsTab) RefreshFpsCard();
         if (Tabs.SelectedItem == AppsTab) _ = EnsureAppsTabLoadedAsync();
         if (Tabs.SelectedItem == DiagTab && RecHistory.ItemsSource is null) LoadRecordings();
         if (Tabs.SelectedItem == ComponentsTab) _ = EnsureComponentsLoadedAsync();

@@ -1992,6 +1992,9 @@
  "✓ {0} ajuste(s) desfeito(s). Reinicia o PC se algum o pedia.": "✓ {0} tweak(s) undone. Restart the PC if any of them asked for it.",
  "Repete o teste no mesmo sítio para ver se a otimização ajudou.": "Repeat the test in the same spot to see if the optimization helped.",
  "Reinicia o PC antes do teste Depois: alguns ajustes só funcionam depois de reiniciar.": "Restart the PC before the After test: some tweaks only work after a restart.",
- "\n\nDica: mede os FPS antes (Rede › FPS por jogo) para provar o ganho.": "\n\nTip: measure FPS first (Network › FPS per game) to prove the gain.",
- "FPS ({0})": "FPS ({0})"
+ "\n\nDica: mede os FPS antes (aba FPS) para provar o ganho.": "\n\nTip: measure FPS first (FPS tab) to prove the gain.",
+ "FPS ({0})": "FPS ({0})",
+ "Os FPS de cada jogo e se as otimizações ajudaram.": "Each game's FPS and whether optimizations helped.",
+ "🎮  Agora": "🎮  Now",
+ "Os FPS de cada jogo e um teste de 60 s que prova se as otimizações deram mais FPS.": "Each game's FPS and a 60 s test that proves whether optimizations gave you more FPS."
 }

@@ -22,6 +22,7 @@ public sealed class Tutorial
         new("AppsTab", "Apps", Loc.T("Instala as apps que queres de uma vez e mantém-nas atualizadas.")),
         new("DriversTab", "Drivers", Loc.T("Drivers em falta ou antigos, das fontes oficiais (NVIDIA, AMD, Microsoft).")),
         new("NetworkTab", Loc.T("Rede"), Loc.T("Modo jogo, de onde vem o lag e bloqueio de anúncios.")),
+        new("FpsTab", "FPS", Loc.T("Os FPS de cada jogo e um teste de 60 s que prova se as otimizações deram mais FPS.")),
         new("HistoryTab", Loc.T("Histórico"), Loc.T("Tudo o que a app mudou no PC, com um botão para desfazer.")),
     };
 

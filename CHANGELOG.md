@@ -1,9 +1,9 @@
 ﻿# Novidades
 
 ## 0.9.5
-- **FPS de qualquer jogo** (Rede): FPS médios, 1% low e engasgos ao vivo no Modo jogo e no overlay, e um resumo
+- **FPS de qualquer jogo** (aba nova **FPS**): FPS médios, 1% low e engasgos ao vivo no Modo jogo e no overlay, e um resumo
   quando o jogo fecha. Usa o PresentMon da Intel (incluído, licença MIT), sem injetar nada no jogo.
-- **Testar FPS** (Ctrl+Shift+F ou no cartão **FPS por jogo**): 60 s antes e depois de otimizar, com o veredito
+- **Testar FPS** (Ctrl+Shift+F ou na aba **FPS**): 60 s antes e depois de otimizar, com o veredito
   Melhorou, Sem diferença, Piorou ou Misto. Se não ajudou, **Desfazer esses ajustes** num clique. Avisa quando os
   FPS parecem limitados (V-Sync) e quando falta reiniciar para os ajustes funcionarem.
 - **Medir FPS sem administrador**: um botão junta o teu utilizador ao grupo "Performance Log Users" do Windows
