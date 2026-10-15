@@ -22,7 +22,7 @@ jobs:
       - name: Testes
         run: dotnet test tests/PCOptimizer.Tests -c Release
 
-      - name: ZIP da app
+      - name: Compilar a app
         shell: pwsh
         run: |
           $app = "publish/PC Optimizer"
@@ -31,6 +31,41 @@ jobs:
           $full = (Resolve-Path $app).Path
           Get-ChildItem $app -Recurse -File -Exclude *.pdb | ForEach-Object { $_.FullName.Substring($full.Length + 1) } | Set-Content "$app/files.txt" -Encoding utf8
           Get-ChildItem $app -Recurse -Filter *.pdb | Remove-Item
+
+      # Assinatura pela SignPath Foundation: fica desligada até a SignPath aprovar o projeto.
+      # Para ligar: segredo SIGNPATH_API_TOKEN e variáveis SIGNPATH_ORGANIZATION_ID e SIGNPATH_ENABLED=true no repositório.
+      - name: Enviar para assinar
+        id: unsigned
+        if: vars.SIGNPATH_ENABLED == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rigwise-unsigned
+          path: publish/PC Optimizer
+
+      - name: Assinar (SignPath)
+        if: vars.SIGNPATH_ENABLED == 'true'
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: rigwise
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: publish/signed
+
+      - name: Usar os ficheiros assinados
+        if: vars.SIGNPATH_ENABLED == 'true'
+        shell: pwsh
+        run: |
+          # sem assinatura não se publica: se a pasta não veio, o passo falha
+          if (-not (Test-Path publish/signed/PCOptimizer.exe)) { throw 'A SignPath não devolveu a app assinada.' }
+          Copy-Item publish/signed/* "publish/PC Optimizer" -Recurse -Force
+
+      - name: ZIP da app
+        shell: pwsh
+        run: |
+          $app = "publish/PC Optimizer"
           Compress-Archive -Path $app -DestinationPath publish/PCOptimizer-win-x64.zip
           # a versão da app tem de ser a da tag: senão o atualizador anunciava uma versão e instalava outra
           $version = (Get-Item "$app/PCOptimizer.exe").VersionInfo.ProductVersion -replace '\+.*$', ''
