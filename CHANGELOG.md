@@ -1,5 +1,12 @@
 ﻿# Novidades
 
+## 0.9.7
+- **FPS**: se a Rigwise for fechada à força com um jogo aberto, o PresentMon já não fica a correr. Quando o jogo
+  para de desenhar (minimizado ou pendurado), os FPS mostram -- em vez de ficarem congelados.
+- **Site e README** a preto e branco, com capturas novas. O site fica mais legível no telemóvel e ganha a página
+  "Code signing policy".
+- Preparação da assinatura de código pela SignPath Foundation (ainda desligada).
+
 ## 0.9.6
 - **Visual novo a preto e branco**: sem roxo. Fundo quase preto, cartões em cinzento neutro e botões principais
   brancos. Só o verde, o amarelo e o vermelho de estado têm cor.
