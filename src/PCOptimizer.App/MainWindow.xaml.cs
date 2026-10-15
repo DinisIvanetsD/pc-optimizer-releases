@@ -777,16 +777,8 @@ public partial class MainWindow : Window
         if (Tabs.SelectedItem == DiagTab && RecHistory.ItemsSource is null) LoadRecordings();
         if (Tabs.SelectedItem == ComponentsTab) _ = EnsureComponentsLoadedAsync();
 
-        // manter a barra lateral sincronizada quando a página muda por código (ex.: "Ver programas de arranque")
-        var name = (Tabs.SelectedItem as TabItem)?.Name;
-        foreach (var nav in NavPanel.Children.OfType<RadioButton>())
-            if ((string)nav.Tag == name && nav.IsChecked != true) nav.IsChecked = true;
-    }
-
-    void Nav_Checked(object sender, RoutedEventArgs e)
-    {
-        if (sender is RadioButton { Tag: string name } && FindName(name) is TabItem tab && Tabs is not null)
-            Tabs.SelectedItem = tab;
+        // manter o menu sincronizado quando a página muda por código (ex.: "Ver programas de arranque")
+        SyncNav();
     }
 
     void GoOptimize_Click(object sender, RoutedEventArgs e) => Tabs.SelectedItem = OptimizeTab;

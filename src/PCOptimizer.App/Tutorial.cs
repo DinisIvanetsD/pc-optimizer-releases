@@ -99,7 +99,7 @@ public sealed class Tutorial
         _count.Text = $"{i + 1} / {Steps.Length}";
         _next.Content = i == Steps.Length - 1 ? Loc.T("Concluir") : Loc.T("Seguinte  →");
         _popup.IsOpen = false;
-        _popup.PlacementTarget = _nav.Children.OfType<RadioButton>().FirstOrDefault(r => (string)r.Tag == step.Tab);
+        _popup.PlacementTarget = _nav.Children.OfType<RadioButton>().FirstOrDefault(r => (string)r.Tag == MainWindow.AreaOf(step.Tab));
         _popup.IsOpen = true;
         var anim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180)) { EasingFunction = new QuadraticEase() };
         _popup.Child.BeginAnimation(UIElement.OpacityProperty, anim);

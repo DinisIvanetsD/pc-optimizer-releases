@@ -1,5 +1,12 @@
 ﻿# Novidades
 
+## 0.10.0
+- **Menu mais simples**: 6 áreas em vez de 14 abas. Início, Corrigir (Diagnóstico, Otimização, Drivers), Jogos
+  (Rede, FPS), Limpar (Disco, Arranque, Apps), Sistema (Componentes, Monitor, RAM) e Histórico. Os separadores de
+  cada área aparecem ao lado do menu. As Definições passam para o botão no canto.
+- **O que se passa?** (Início): escolhe o problema (lag, poucos FPS, PC lento, ecrãs azuis, falta de espaço) e a
+  app leva-te ao sítio certo e começa a verificação.
+
 ## 0.9.7
 - **FPS**: se a Rigwise for fechada à força com um jogo aberto, o PresentMon já não fica a correr. Quando o jogo
   para de desenhar (minimizado ou pendurado), os FPS mostram -- em vez de ficarem congelados.

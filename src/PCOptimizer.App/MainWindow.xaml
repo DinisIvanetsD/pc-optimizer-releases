@@ -99,22 +99,21 @@
 
     <!-- ===================== ABAS ===================== -->
     <Border Grid.Row="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="10,0">
-      <StackPanel x:Name="NavPanel" Orientation="Horizontal">
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="HomeTab" Content="Início" Checked="Nav_Checked" IsChecked="True"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="DiagTab" Content="Diagnóstico" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="OptimizeTab" Content="Otimização" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="AppsTab" Content="Apps" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="DriversTab" Content="Drivers" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="ComponentsTab" Content="Componentes" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="StorageTab" Content="Disco" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="StartupTab" Content="Arranque" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="MonitorTab" Content="Monitor" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="RamTab" Content="RAM" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="NetworkTab" Content="Rede" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="FpsTab" Content="FPS" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="HistoryTab" Content="Histórico" Checked="Nav_Checked"/>
-        <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="SettingsTab" Content="Definições" Checked="Nav_Checked"/>
-      </StackPanel>
+      <DockPanel>
+        <!-- as 6 áreas; cada uma junta as abas de um assunto (ver MainWindow.Areas.cs) -->
+        <StackPanel x:Name="NavPanel" Orientation="Horizontal" DockPanel.Dock="Left">
+          <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="home" Content="Início" Checked="Nav_Checked" IsChecked="True"/>
+          <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="fix" Content="Corrigir" Checked="Nav_Checked"/>
+          <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="games" Content="Jogos" Checked="Nav_Checked"/>
+          <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="clean" Content="Limpar" Checked="Nav_Checked"/>
+          <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="system" Content="Sistema" Checked="Nav_Checked"/>
+          <RadioButton Style="{StaticResource NavButton}" GroupName="nav" Tag="history" Content="Histórico" Checked="Nav_Checked"/>
+        </StackPanel>
+        <Button DockPanel.Dock="Right" Content="⚙  Definições" Click="Settings_Click" HorizontalAlignment="Right" VerticalAlignment="Center"
+                Padding="10,4" Margin="0" ToolTip="Definições"/>
+        <!-- os separadores da área escolhida (escondido nas áreas com uma só aba) -->
+        <StackPanel x:Name="SubNavPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0"/>
+      </DockPanel>
     </Border>
 
     <TabControl x:Name="Tabs" Grid.Row="2" Margin="16,0,16,0" SelectedIndex="0" SelectionChanged="Tabs_SelectionChanged">
@@ -171,6 +170,21 @@
                   <TextBlock x:Name="HomeChartText" Foreground="{StaticResource FaintBrush}" FontSize="11" Margin="0,4,0,0"/>
                 </StackPanel>
               </Grid>
+            </Border>
+
+            <!-- O que se passa? (começar pelo problema) -->
+            <Border Style="{StaticResource Card}">
+              <StackPanel>
+                <TextBlock Text="O que se passa?" Style="{StaticResource H2}"/>
+                <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,10" Text="Escolhe o problema: a app leva-te ao sítio certo e começa a verificação."/>
+                <WrapPanel>
+                  <Button Content="🌐  Os jogos dão lag" Tag="lag" Click="Problem_Click" Margin="0,0,8,8"/>
+                  <Button Content="📈  Poucos FPS" Tag="fps" Click="Problem_Click" Margin="0,0,8,8"/>
+                  <Button Content="🐢  O PC está lento" Tag="slow" Click="Problem_Click" Margin="0,0,8,8"/>
+                  <Button Content="💥  Ecrãs azuis ou crashes" Tag="crash" Click="Problem_Click" Margin="0,0,8,8"/>
+                  <Button Content="💾  Falta espaço" Tag="space" Click="Problem_Click" Margin="0,0,8,8"/>
+                </WrapPanel>
+              </StackPanel>
             </Border>
 
             <!-- O que fazer agora -->

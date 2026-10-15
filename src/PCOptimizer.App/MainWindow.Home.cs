@@ -189,6 +189,32 @@ public partial class MainWindow
                 System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
+    /// <summary>"O que se passa?": abre o sítio certo para o problema e já começa a verificação.</summary>
+    async void Problem_Click(object sender, RoutedEventArgs e)
+    {
+        switch ((sender as Button)?.Tag as string)
+        {
+            case "lag":
+                Tabs.SelectedItem = NetworkTab;
+                Route_Click(sender, e); // "Onde está o lag?": casa, operador, internet ou servidor
+                break;
+            case "fps":
+                Tabs.SelectedItem = FpsTab;
+                break;
+            case "slow":
+                Tabs.SelectedItem = MonitorTab; // as apps que mais gastam RAM e CPU agora
+                break;
+            case "crash":
+                Tabs.SelectedItem = DiagTab;
+                await RunScanAsync();
+                break;
+            case "space":
+                Tabs.SelectedItem = StorageTab;
+                SegCleanup.IsChecked = true;
+                break;
+        }
+    }
+
     void HomeShortcut_Click(object sender, RoutedEventArgs e)
     {
         switch ((sender as Button)?.Tag as string)
