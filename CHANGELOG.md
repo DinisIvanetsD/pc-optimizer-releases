@@ -1,5 +1,18 @@
 ﻿# Novidades
 
+## 0.9.5
+- **FPS de qualquer jogo** (Rede): FPS médios, 1% low e engasgos ao vivo no Modo jogo e no overlay, e um resumo
+  quando o jogo fecha. Usa o PresentMon da Intel (incluído, licença MIT), sem injetar nada no jogo.
+- **Testar FPS** (Ctrl+Shift+F ou no cartão **FPS por jogo**): 60 s antes e depois de otimizar, com o veredito
+  Melhorou, Sem diferença, Piorou ou Misto. Se não ajudou, **Desfazer esses ajustes** num clique. Avisa quando os
+  FPS parecem limitados (V-Sync) e quando falta reiniciar para os ajustes funcionarem.
+- **Medir FPS sem administrador**: um botão junta o teu utilizador ao grupo "Performance Log Users" do Windows
+  (uma vez, reversível no Histórico).
+- **Modo jogo deteta qualquer jogo** em ecrã inteiro, não só os da lista, e mede-o sem perguntar.
+- **Otimizar para este jogo** passa a fazer efeito na ligação: torrents e gestores de downloads ficam em pausa
+  enquanto jogas, o jogo fica com prioridade alta e o plano Desempenho Máximo já não é trocado. Tudo volta ao
+  normal quando o jogo fecha.
+
 ## 0.9.4
 - **Bateria** (Componentes): saúde em relação à capacidade de fábrica, ciclos de carga e carga atual, com aviso
   quando já está gasta. Lê o driver de bateria do Windows, sem administrador.
