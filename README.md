@@ -6,11 +6,11 @@
 
 **Finds out why your PC is slow, crashes or lags, and fixes it.**
 
-[![Latest release](https://img.shields.io/github/v/release/DinisIvanetsD/rigwise?label=version&color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/DinisIvanetsD/rigwise/total?color=8b5cf6)](https://github.com/DinisIvanetsD/rigwise/releases)
-![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-8b5cf6)
+[![Latest release](https://img.shields.io/github/v/release/DinisIvanetsD/rigwise?label=version&color=555555)](https://github.com/DinisIvanetsD/rigwise/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/DinisIvanetsD/rigwise/total?color=555555)](https://github.com/DinisIvanetsD/rigwise/releases)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-555555)
 ![Free](https://img.shields.io/badge/price-free-3fb950)
-[![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-555555)](LICENSE)
 
 ### [⬇ Download](https://github.com/DinisIvanetsD/rigwise/releases/latest/download/PCOptimizer-win-x64.zip) · [Website](https://rigwise-vercel.vercel.app)
 

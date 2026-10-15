@@ -11,13 +11,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #0f1115;        /* fundo, igual à app */
-    --panel: #161920;
-    --raised: #1b1f27;
-    --line: #262b36;
+    --ink: #0b0b0c;        /* fundo, igual à app */
+    --panel: #141416;
+    --raised: #18181b;
+    --line: #2a2a2f;
     --text: #e6e9ef;
-    --muted: #9aa3b2;
-    --signal: #8b5cf6;     /* o roxo da app (logótipo) */
+    --muted: #9a9a9f;
+    --signal: #f2f2f2;     /* o roxo da app (logótipo) */
     --ok: #3fb950;
     --warn: #e3b341;
     --crit: #f85149;
@@ -48,14 +48,14 @@
   /* ---------- hero ---------- */
   .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; padding: 56px 0 88px; }
   h1 { font-size: clamp(38px, 5.4vw, 64px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 800; margin: 0 0 22px; max-width: 14ch; }
-  .lede { font-size: 20px; color: #c3c9d4; max-width: 46ch; margin: 0 0 32px; }
+  .lede { font-size: 20px; color: #c9c9ce; max-width: 46ch; margin: 0 0 32px; }
   .get { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
   .btn {
     display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
     background: var(--signal); color: #fff; font-weight: 700; font-size: 17px;
     padding: 15px 26px; border-radius: 12px; box-shadow: 0 2px 0 rgba(0,0,0,.35);
   }
-  .btn:hover { background: #a07bff; }
+  .btn:hover { background: #d4d4d8; }
   .btn svg { width: 20px; height: 20px; }
   .fine { color: var(--muted); font-size: 14px; line-height: 1.5; }
 
@@ -83,18 +83,18 @@
   /* ---------- o que faz ---------- */
   section { padding: 72px 0; border-top: 1px solid var(--line); }
   h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -0.02em; font-weight: 800; margin: 0 0 14px; max-width: 22ch; }
-  .intro { color: #c3c9d4; max-width: var(--measure); margin: 0 0 44px; }
+  .intro { color: #c9c9ce; max-width: var(--measure); margin: 0 0 44px; }
   .feature { display: grid; grid-template-columns: 0.9fr 1.4fr; gap: 48px; align-items: center; margin: 0 0 76px; }
   .feature:nth-of-type(even) { grid-template-columns: 1.4fr 0.9fr; }
   .feature:nth-of-type(even) .shot { order: -1; }
   .feature h3 { font-size: 24px; letter-spacing: -0.01em; margin: 0 0 10px; }
-  .feature p { color: #c3c9d4; margin: 0 0 12px; max-width: 46ch; }
-  .feature ul { margin: 0; padding-left: 20px; color: #c3c9d4; max-width: 46ch; }
+  .feature p { color: #c9c9ce; margin: 0 0 12px; max-width: 46ch; }
+  .feature ul { margin: 0; padding-left: 20px; color: #c9c9ce; max-width: 46ch; }
   .feature li { margin: 4px 0; }
   .shot { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 24px 48px -28px rgba(0,0,0,.7); background: var(--panel); }
   .float { position: relative; }
   .float .mini { position: absolute; border-radius: 10px; box-shadow: 0 20px 40px -14px rgba(0,0,0,.9); }
-  .float .prompt { width: 44%; right: -14px; bottom: -26px; border: 1px solid #3b2a63; }
+  .float .prompt { width: 44%; right: -14px; bottom: -26px; border: 1px solid #2e2e33; }
   .float .ov { width: 32%; left: 18px; top: 18px; border-radius: 8px; }
 
   .others { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
@@ -109,7 +109,7 @@
   ol.steps li::before { content: counter(s); width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--signal); color: var(--signal); font-weight: 700; display: grid; place-items: center; }
   ol.steps b { display: block; }
   ol.steps span { color: var(--muted); font-size: 15px; }
-  .why { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; color: #c3c9d4; }
+  .why { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; color: #c9c9ce; }
   .why p { margin: 0 0 12px; }
   .why p:last-child { margin: 0; }
 
