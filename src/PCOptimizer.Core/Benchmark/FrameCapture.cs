@@ -58,6 +58,7 @@ public sealed class FrameCapture : IDisposable
                     p.OutputDataReceived += (_, e) => OnOutput(e.Data);
                     p.ErrorDataReceived += (_, e) => OnError(e.Data);
                     p.Start();
+                    KillWithApp(p);
                     _process = p;
                     _started = true;
                     p.BeginOutputReadLine();
@@ -126,6 +127,51 @@ public sealed class FrameCapture : IDisposable
     {
         try { handler?.Invoke(arg); } catch { }
     }
+
+    // Um "job" do Windows com KILL_ON_JOB_CLOSE: se a Rigwise for abaixo (ou fechada à força) com um jogo aberto,
+    // o Windows fecha o job e mata o PresentMon com ela. Sem isto ficava a correr até o jogo fechar.
+    static readonly Lazy<IntPtr> Job = new(CreateKillOnCloseJob);
+
+    /// <summary>Junta o processo ao job da app: morre quando a app morre. False se o Windows recusar.</summary>
+    public static bool KillWithApp(Process p)
+    {
+        try { return Job.Value != IntPtr.Zero && AssignProcessToJobObject(Job.Value, p.Handle); } catch { return false; }
+    }
+
+    static IntPtr CreateKillOnCloseJob()
+    {
+        var job = CreateJobObject(IntPtr.Zero, null);
+        if (job == IntPtr.Zero) return IntPtr.Zero;
+        var info = new JobExtendedLimits { BasicLimitInformation = new JobBasicLimits { LimitFlags = 0x2000 /* KILL_ON_JOB_CLOSE */ } };
+        var size = System.Runtime.InteropServices.Marshal.SizeOf<JobExtendedLimits>();
+        return SetInformationJobObject(job, 9 /* JobObjectExtendedLimitInformation */, ref info, (uint)size) ? job : IntPtr.Zero;
+    }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    struct JobBasicLimits
+    {
+        public long PerProcessUserTimeLimit, PerJobUserTimeLimit;
+        public uint LimitFlags;
+        public UIntPtr MinimumWorkingSetSize, MaximumWorkingSetSize;
+        public uint ActiveProcessLimit;
+        public UIntPtr Affinity;
+        public uint PriorityClass, SchedulingClass;
+    }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    struct JobExtendedLimits
+    {
+        public JobBasicLimits BasicLimitInformation;
+        public ulong ReadOperationCount, WriteOperationCount, OtherOperationCount, ReadTransferCount, WriteTransferCount, OtherTransferCount;
+        public UIntPtr ProcessMemoryLimit, JobMemoryLimit, PeakProcessMemoryUsed, PeakJobMemoryUsed;
+    }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    static extern IntPtr CreateJobObject(IntPtr attributes, string? name);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref JobExtendedLimits info, uint size);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
     /// <summary>Fecha a sessão ETW "Rigwise". Uma sessão ETW sobrevive ao processo que a abriu à força.</summary>
     public static async Task StopSessionAsync()

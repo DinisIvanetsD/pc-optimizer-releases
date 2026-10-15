@@ -154,4 +154,12 @@ public class FpsTests
         Assert.Throws<ArgumentException>(() => PerfLogAccess.RemoveScript(injecao));
         Assert.Throws<ArgumentException>(() => PerfLogAccess.AddScript(injecao));
     }
+
+    [Fact]
+    public void Processo_lancado_fica_preso_a_vida_da_app()
+    {
+        using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ping", "-n 30 127.0.0.1") { CreateNoWindow = true, UseShellExecute = false })!;
+        try { Assert.True(FrameCapture.KillWithApp(p)); }
+        finally { p.Kill(); }
+    }
 }

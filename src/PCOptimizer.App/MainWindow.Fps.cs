@@ -42,6 +42,7 @@ public partial class MainWindow
     /// <summary>Frames do teste guiado; null sem teste a decorrer.</summary>
     List<double>? _testFrames = null;
     DispatcherTimer? _fpsTimer;
+    long _lastFrameTick;
 
     /// <summary>Mede os FPS do jogo ao vivo (quadro do Modo jogo e overlay), se a medição estiver ativa.</summary>
     void StartFps(RunningGame g)
@@ -58,6 +59,7 @@ public partial class MainWindow
             lock (_fpsGate)
             {
                 if (_fps != cap) return; // frame atrasado de uma captura já parada
+                _lastFrameTick = Environment.TickCount64;
                 _fpsWindow.Add(ms);
                 if (_sessionFrames.Count < MaxSessionFrames) _sessionFrames.Add(ms);
                 _testFrames?.Add(ms);
@@ -79,7 +81,9 @@ public partial class MainWindow
 
     void UpdateFps(bool detected)
     {
-        var s = _fpsWindow.Stats();
+        // o jogo minimizado ou pendurado deixa de enviar frames: mostra "--" em vez dos últimos 10 s congelados
+        var stale = Environment.TickCount64 - Interlocked.Read(ref _lastFrameTick) > 2000;
+        var s = stale ? null : _fpsWindow.Stats();
         GameFps.Text = s is null ? "--" : $"{s.AvgFps:N0}";
         GameLow1.Text = s is null ? "--" : $"{s.Low1Fps:N0}";
         // jogo detetado = sem servidor: o overlay só mostra os FPS, sem separador; durante o teste mostra a contagem
