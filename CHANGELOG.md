@@ -1,5 +1,10 @@
 ﻿# Novidades
 
+## 0.9.6
+- **Visual novo a preto e branco**: sem roxo. Fundo quase preto, cartões em cinzento neutro e botões principais
+  brancos. Só o verde, o amarelo e o vermelho de estado têm cor.
+- **Logótipo e ícone** a condizer: branco com o raio preto.
+
 ## 0.9.5
 - **FPS de qualquer jogo** (aba nova **FPS**): FPS médios, 1% low e engasgos ao vivo no Modo jogo e no overlay, e um resumo
   quando o jogo fecha. Usa o PresentMon da Intel (incluído, licença MIT), sem injetar nada no jogo.
