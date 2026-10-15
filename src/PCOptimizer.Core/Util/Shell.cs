@@ -53,7 +53,8 @@ public static class Shell
     }
 
     /// <summary>Coloca uma string entre aspas simples para PowerShell.</summary>
-    public static string Quote(string s) => "'" + s.Replace("'", "''") + "'";
+    // o PowerShell trata as aspas curvas (U+2018–U+201B) como aspas simples: dobradas, ficam escapadas
+    public static string Quote(string s) => "'" + Regex.Replace(s, "['\u2018\u2019\u201A\u201B]", "$0$0") + "'";
 
     /// <summary>Extrai uma mensagem legível do stderr do PowerShell (que pode vir em CLIXML).</summary>
     public static string CleanError(ShellResult r)

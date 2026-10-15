@@ -122,11 +122,29 @@ public class FpsTests
     public void Juntar_ao_grupo_usa_SIDs_e_nao_nomes()
     {
         var add = PerfLogAccess.AddScript("S-1-5-21-1-2-3-1001");
-        Assert.Contains("-SID 'S-1-5-32-559'", add);
-        Assert.Contains("'S-1-5-21-1-2-3-1001'", add);
-        Assert.DoesNotContain("Performance Log Users", add);
-        Assert.Contains("Remove-LocalGroupMember", PerfLogAccess.RemoveScript("S-1-5-21-1-2-3-1001"));
+        var remove = PerfLogAccess.RemoveScript("S-1-5-21-1-2-3-1001");
+        foreach (var script in new[] { add, remove })
+        {
+            Assert.Contains("$ErrorActionPreference='Stop'", script);
+            Assert.Contains("-SID 'S-1-5-32-559'", script);
+            Assert.Contains("-Member 'S-1-5-21-1-2-3-1001'", script);
+            Assert.DoesNotContain("Performance Log Users", script);
+        }
+        // já estar no grupo (ou já ter saído) é o único erro ignorado
+        Assert.Contains("try { Add-LocalGroupMember ", add);
+        Assert.Contains("catch [Microsoft.PowerShell.Commands.MemberExistsException] { }", add);
+        Assert.DoesNotContain("Remove-", add);
+        Assert.Contains("try { Remove-LocalGroupMember ", remove);
+        Assert.Contains("catch [Microsoft.PowerShell.Commands.MemberNotFoundException] { }", remove);
+        Assert.DoesNotContain("Add-", remove);
     }
+
+    [Theory]
+    [InlineData("a'b", "'a''b'")]
+    [InlineData("a’b", "'a’’b'")]   // o PowerShell também fecha o texto com as aspas curvas
+    [InlineData("a‘b‚c‛d", "'a‘‘b‚‚c‛‛d'")]
+    public void Quote_escapa_aspas_simples_e_curvas(string text, string expected) =>
+        Assert.Equal(expected, PCOptimizer.Core.Util.Shell.Quote(text));
 
     [Fact]
     public void Script_rejeita_um_SID_que_nao_e_SID()

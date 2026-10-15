@@ -18,33 +18,39 @@ public static class PerfLogAccess
     public const string GroupSid = "S-1-5-32-559";
 
     /// <summary>O token da sessão atual já traz o grupo (só muda depois de terminar sessão).</summary>
-    public static bool IsMember => WindowsIdentity.GetCurrent().Groups?.Any(g => g.Value == GroupSid) ?? false;
+    public static bool IsMember
+    {
+        get
+        {
+            using var id = WindowsIdentity.GetCurrent();
+            return id.Groups?.Any(g => g.Value == GroupSid) ?? false;
+        }
+    }
 
     public static FpsAccess State(bool elevated, bool member, DateTime? enabledAt) =>
         elevated || member ? FpsAccess.Ready : enabledAt != null ? FpsAccess.NeedsSignOut : FpsAccess.NeedsEnable;
 
     public static FpsAccess Current => State(Admin.IsElevated, IsMember, AppSettings.Current.FpsEnabledAt);
 
-    // Juntar duas vezes (ou tirar quem não está) dá erro, por isso só mexe quando for preciso.
-    public static string AddScript(string userSid) => Script(userSid, "-not ", "Add");
+    // Juntar duas vezes (ou tirar quem não está) dá erro: esse erro em concreto é ignorado, qualquer outro falha.
+    // Sem Get-LocalGroupMember: falha em grupos com SIDs órfãos ou do Azure AD.
+    public static string AddScript(string userSid) => Script(userSid, "Add", "MemberExistsException");
 
-    public static string RemoveScript(string userSid) => Script(userSid, "", "Remove");
+    public static string RemoveScript(string userSid) => Script(userSid, "Remove", "MemberNotFoundException");
 
-    static string Script(string userSid, string negate, string verb)
+    static string Script(string userSid, string verb, string alreadyDone)
     {
-        // corre elevado e o SID pode vir do history.json (editável): só passa um SID de verdade, já normalizado.
-        // Shell.Quote não chega, porque as aspas curvas (U+2018–U+201B) também fecham um texto entre aspas simples.
+        // corre elevado e o SID pode vir do history.json (editável): só passa um SID de verdade, já normalizado
         userSid = new SecurityIdentifier(userSid).Value;
-        var group = Shell.Quote(GroupSid);
-        var user = Shell.Quote(userSid);
-        return $"$ErrorActionPreference='Stop'; if ({negate}(Get-LocalGroupMember -SID {group} | Where-Object {{ $_.SID.Value -eq {user} }})) " +
-               $"{{ {verb}-LocalGroupMember -SID {group} -Member {user} }}";
+        return $"$ErrorActionPreference='Stop'; try {{ {verb}-LocalGroupMember -SID {Shell.Quote(GroupSid)} -Member {Shell.Quote(userSid)} }} " +
+               $"catch [Microsoft.PowerShell.Commands.{alreadyDone}] {{ }}";
     }
 
     public static async Task EnableAsync()
     {
         Simulation.Guard(Loc.T("ativar a medição de FPS"));
-        var sid = WindowsIdentity.GetCurrent().User!.Value;
+        using var id = WindowsIdentity.GetCurrent();
+        var sid = id.User!.Value;
         if (!await RunAsAdminAsync(AddScript(sid)))
             throw new InvalidOperationException(Loc.T("Não foi possível ativar a medição de FPS."));
         ChangeLog.Record(ChangeKind.Tweak, Loc.T("Medição de FPS ativada"),
