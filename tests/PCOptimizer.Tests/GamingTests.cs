@@ -43,6 +43,10 @@ public class GamingTests
     [InlineData("vlc", true, false)]
     [InlineData("explorer", true, false)]
     [InlineData("PCOptimizer", true, false)]
+    [InlineData("mstsc", true, false)]          // ambiente de trabalho remoto em ecrã inteiro
+    [InlineData("Code", true, false)]
+    [InlineData("ms-teams", true, false)]
+    [InlineData("NVIDIA Overlay", true, false)]
     [InlineData("eldenring", false, false)]     // em janela: não conta
     public void Qualquer_jogo_em_ecra_inteiro(string process, bool covers, bool expected) =>
         Assert.Equal(expected, GameCatalog.IsCandidate(process, covers));
@@ -52,10 +56,10 @@ public class GamingTests
     {
         var detected = new RunningGame(new GameInfo("eldenring", "eldenring.exe"), 7, null, Detected: true);
         var known = new RunningGame(GameCatalog.Known[0], 9, null);
-        Assert.Same(detected, GameCatalog.Pick(null, foreground: null, current: detected, alive: _ => true));
-        Assert.Null(GameCatalog.Pick(null, null, detected, alive: _ => false));                // o jogo fechou
-        Assert.Same(known, GameCatalog.Pick(known, null, detected, _ => true));                 // um jogo conhecido ganha
-        Assert.Same(detected, GameCatalog.Pick(null, detected, null, _ => true));               // novo em primeiro plano
+        Assert.Same(detected, GameCatalog.Pick(null, foreground: null, current: detected, alive: _ => true, fullscreen: _ => true));
+        Assert.Null(GameCatalog.Pick(null, null, detected, alive: _ => false, _ => true));     // o jogo fechou
+        Assert.Same(known, GameCatalog.Pick(known, null, detected, _ => true, _ => true));      // um jogo conhecido ganha
+        Assert.Same(detected, GameCatalog.Pick(null, detected, null, _ => true, _ => true));    // novo em primeiro plano
     }
 
     [Fact]
@@ -63,7 +67,15 @@ public class GamingTests
     {
         var detected = new RunningGame(new GameInfo("eldenring", "eldenring.exe"), 7, null, Detected: true);
         var other = new RunningGame(new GameInfo("hades", "hades.exe"), 8, null, Detected: true);
-        Assert.Same(other, GameCatalog.Pick(null, other, detected, _ => true));
+        Assert.Same(other, GameCatalog.Pick(null, other, detected, _ => true, _ => true));
+    }
+
+    [Fact]
+    public void Detetado_que_deixou_de_ocupar_o_ecra_e_nao_esta_minimizado_sai()
+    {
+        // falso positivo (ex.: um vídeo em ecrã inteiro numa app desconhecida) que voltou a ser uma janela normal
+        var detected = new RunningGame(new GameInfo("someapp", "someapp.exe"), 7, null, Detected: true);
+        Assert.Null(GameCatalog.Pick(null, null, detected, alive: _ => true, fullscreen: _ => false));
     }
 
     [Theory]

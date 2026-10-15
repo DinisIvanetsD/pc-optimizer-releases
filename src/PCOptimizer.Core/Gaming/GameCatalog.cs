@@ -96,6 +96,7 @@ public static class GameCatalog
         "vlc", "mpc-hc64", "mpc-be64", "PotPlayerMini64", "wmplayer", "Video.UI", "Microsoft.Media.Player", "mpv",
         "WINWORD", "EXCEL", "POWERPNT", "Acrobat", "AcroRd32", "PCOptimizer", "obs64", "Discord", "Spotify",
         "ApplicationFrameHost", "LockApp", "SearchHost", "StartMenuExperienceHost", "ShellExperienceHost", "TextInputHost",
+        "mstsc", "Code", "WindowsTerminal", "Zoom", "ms-teams", "Teams", "GameBar", "NVIDIA Overlay", "SnippingTool", "ScreenClippingHost",
     };
 
     /// <summary>Um programa em primeiro plano que ocupa o monitor todo e não é um dos de <see cref="NotGames"/>.</summary>
@@ -103,10 +104,11 @@ public static class GameCatalog
 
     /// <summary>
     /// Um jogo conhecido ganha sempre; depois, um novo candidato em ecrã inteiro. Sem nenhum dos dois (ex.: Alt+Tab para
-    /// o browser) o jogo detetado antes fica até o processo fechar.
+    /// o browser) o jogo detetado antes fica enquanto o processo viver e a janela ainda ocupar o monitor ou estiver
+    /// minimizada (<paramref name="fullscreen"/>): um falso positivo que passou a janela normal deixa de contar.
     /// </summary>
-    public static RunningGame? Pick(RunningGame? known, RunningGame? foreground, RunningGame? current, Func<int, bool> alive) =>
-        known ?? foreground ?? (current is { Detected: true } && alive(current.Pid) ? current : null);
+    public static RunningGame? Pick(RunningGame? known, RunningGame? foreground, RunningGame? current, Func<int, bool> alive, Func<int, bool> fullscreen) =>
+        known ?? foreground ?? (current is { Detected: true } && alive(current.Pid) && fullscreen(current.Pid) ? current : null);
 
     /// <summary>Sem barra de título (WS_CAPTION = WS_BORDER | WS_DLGFRAME): ecrã inteiro ou sem bordas, não uma janela maximizada.</summary>
     public static bool IsBorderless(long style) => (style & 0x00C00000) != 0x00C00000;
@@ -115,7 +117,7 @@ public static class GameCatalog
     public static RunningGame? FindRunning(AppSettings s, RunningGame? current = null)
     {
         var known = FindKnown(s);
-        return Pick(known, known is null ? FindForeground() : null, current, Alive);
+        return Pick(known, known is null ? FindForeground() : null, current, Alive, StillFullscreen);
     }
 
     static RunningGame? FindKnown(AppSettings s)
@@ -173,6 +175,18 @@ public static class GameCatalog
         catch { return true; }                       // existe, mas não deixa ler o estado (processo protegido)
     }
 
+    /// <summary>A janela principal ainda ocupa o monitor ou está minimizada (Alt+Tab num jogo em ecrã inteiro). Sem janela principal conta como minimizada.</summary>
+    static bool StillFullscreen(int pid)
+    {
+        try
+        {
+            using var p = Process.GetProcessById(pid);
+            var hwnd = p.MainWindowHandle;
+            return hwnd == IntPtr.Zero || IsIconic(hwnd) || CoversMonitor(hwnd);
+        }
+        catch { return true; } // já fechou ou não deixa ler: decide o Alive
+    }
+
     static DateTime StartTime(int pid)
     {
         try
@@ -186,6 +200,7 @@ public static class GameCatalog
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern int GetWindowLong(IntPtr hwnd, int index);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool IsIconic(IntPtr hwnd);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
     [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
