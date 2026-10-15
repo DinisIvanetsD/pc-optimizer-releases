@@ -44,6 +44,13 @@ public static class FpsVerdict
     public static FpsRole NextTestRole(FpsRun? pendingBefore, IEnumerable<ChangeEntry> history, DateTime now) =>
         pendingBefore != null && TweaksBetween(history, pendingBefore.When, now).Count > 0 ? FpsRole.After : FpsRole.Before;
 
+    /// <summary>
+    /// O cartão volta a mostrar o último veredito (depois de reabrir a app, por exemplo como administrador para desfazer)
+    /// só se há ajustes por desfazer, não melhorou (Melhorou não tem botões, nem Manter para o fechar) e não se carregou em Manter.
+    /// </summary>
+    public static bool ShouldShow(FpsOutcome outcome, int tweakCount, DateTime? keptAt, DateTime afterWhen) =>
+        outcome != FpsOutcome.Better && tweakCount > 0 && keptAt != afterWhen;
+
     /// <summary>Desfaz os ajustes dados. Devolve quantos foram mesmo revertidos (os que já não tinham backup não contam).</summary>
     public static async Task<int> UndoTweaksAsync(IReadOnlyList<ChangeEntry> entries)
     {

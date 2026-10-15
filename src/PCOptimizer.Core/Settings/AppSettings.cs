@@ -50,6 +50,8 @@ public sealed class AppSettings
     public double? OverlayTop { get; set; }
     /// <summary>Quando a medição de FPS foi ativada (utilizador no grupo "Performance Log Users"); null = não ativada.</summary>
     public DateTime? FpsEnabledAt { get; set; }
+    /// <summary>O Depois (When) do veredito em que o utilizador carregou em Manter: esse veredito já não volta a aparecer.</summary>
+    public DateTime? FpsVerdictKeptAt { get; set; }
 
     // atualizações
     public bool CheckUpdates { get; set; } = true;

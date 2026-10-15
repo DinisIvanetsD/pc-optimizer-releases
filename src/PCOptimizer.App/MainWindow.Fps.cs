@@ -138,6 +138,17 @@ public partial class MainWindow
         FpsAccessText.Text = access == FpsAccess.NeedsSignOut ? Loc.T("Termina sessão no Windows para ativar os FPS.") : "";
         FpsTestButton.Visibility = _game != null && access == FpsAccess.Ready ? Visibility.Visible : Visibility.Collapsed;
 
+        // o último veredito sobrevive a reabrir a app (o Desfazer pode pedir para reabrir como administrador);
+        // durante um teste fica escondido
+        if (_testTimer is null)
+        {
+            if (FpsHistory.LatestPair() is { } p &&
+                FpsVerdict.ShouldShow(FpsVerdict.Compare(p.Before, p.After).Outcome,
+                    FpsVerdict.TweaksBetween(ChangeLog.All, p.Before.When, p.After.When).Count, S.FpsVerdictKeptAt, p.After.When))
+                ShowVerdict(p.Before, p.After);
+            else FpsVerdictBox.Visibility = Visibility.Collapsed;
+        }
+
         var games = FpsHistory.Summaries().Select(FpsGameVm.From).ToList();
         FpsGamesList.ItemsSource = games;
         FpsEmptyText.Visibility = games.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -162,6 +173,8 @@ public partial class MainWindow
     DispatcherTimer? _testTimer;
     /// <summary>Os ajustes que o "Desfazer esses ajustes" do último veredito reverte.</summary>
     List<ChangeEntry> _verdictTweaks = new();
+    /// <summary>O When do Depois do veredito mostrado (o Manter guarda-o nas definições).</summary>
+    DateTime _verdictAfter;
 
     void TestFps_Click(object sender, RoutedEventArgs e) => StartFpsTest();
 
@@ -241,6 +254,7 @@ public partial class MainWindow
     {
         var c = FpsVerdict.Compare(before, after);
         _verdictTweaks = FpsVerdict.TweaksBetween(ChangeLog.All, before.When, after.When);
+        _verdictAfter = after.When;
         string avg = Signed(c.AvgChangePct), low = Signed(c.LowChangePct);
         FpsVerdictTitle.Text = c.Outcome switch { FpsOutcome.Better => "✓", FpsOutcome.Same => "=", FpsOutcome.Worse => "✗", _ => "±" } + "  " + after.Game;
         FpsVerdictText.Text = c.Outcome switch
@@ -280,7 +294,7 @@ public partial class MainWindow
             if (_verdictTweaks.Any(t => TweakCatalog.Get(t.Data["id"]).RequiresAdmin) && !EnsureAdmin()) return;
             // pode dar menos que o número de ajustes: os que partilham a cópia (planos de energia) revertem juntos
             var n = await FpsVerdict.UndoTweaksAsync(_verdictTweaks);
-            FpsUndoButton.Visibility = FpsKeepButton.Visibility = Visibility.Collapsed;
+            FpsVerdictBox.Visibility = Visibility.Collapsed;
             FpsTestStatus.Text = Loc.T($"✓ {n} ajuste(s) desfeito(s). Reinicia o PC se algum o pedia.");
         }
         catch (Exception ex) { FpsTestStatus.Text = Ui.Error(ex); }
@@ -288,7 +302,12 @@ public partial class MainWindow
         await RefreshAllTweaksAsync(); // também depois de um erro a meio: alguns já podem ter sido revertidos
     }
 
-    void FpsKeep_Click(object sender, RoutedEventArgs e) => FpsVerdictBox.Visibility = Visibility.Collapsed;
+    void FpsKeep_Click(object sender, RoutedEventArgs e)
+    {
+        S.FpsVerdictKeptAt = _verdictAfter; // este veredito já não volta a aparecer
+        S.Save();
+        FpsVerdictBox.Visibility = Visibility.Collapsed;
+    }
 
     /// <summary>Ao abrir um jogo com um Antes à espera e ajustes feitos depois dele.</summary>
     void RemindFpsTest(RunningGame g)

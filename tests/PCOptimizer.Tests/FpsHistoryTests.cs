@@ -30,6 +30,20 @@ public class FpsHistoryTests : IDisposable
     public void Veredito(double avgB, double lowB, double avgA, double lowA, FpsOutcome expected) =>
         Assert.Equal(expected, FpsVerdict.Compare(Run(FpsRole.Before, avgB, lowB, T0), Run(FpsRole.After, avgA, lowA, T0.AddHours(1))).Outcome);
 
+    [Theory]
+    [InlineData(FpsOutcome.Worse, 3, null, true)]
+    [InlineData(FpsOutcome.Same, 1, null, true)]
+    [InlineData(FpsOutcome.Mixed, 2, null, true)]
+    [InlineData(FpsOutcome.Worse, 3, 0, false)]    // carregou em Manter neste veredito
+    [InlineData(FpsOutcome.Worse, 3, -1, true)]    // Manter foi noutro veredito, mais antigo
+    [InlineData(FpsOutcome.Worse, 0, null, false)] // tudo já desfeito
+    [InlineData(FpsOutcome.Better, 3, null, false)]
+    public void Veredito_volta_a_aparecer_so_com_ajustes_por_desfazer(FpsOutcome outcome, int tweaks, int? keptDaysFromAfter, bool expected)
+    {
+        var after = T0.AddHours(1);
+        Assert.Equal(expected, FpsVerdict.ShouldShow(outcome, tweaks, keptDaysFromAfter is int d ? after.AddDays(d) : null, after));
+    }
+
     [Fact]
     public void FPS_limitados_sao_avisados()
     {
