@@ -31,6 +31,15 @@ public class FpsCardTests
     }
 
     [Fact]
+    public void Linha_do_jogo_quase_igual_e_a_descer_mostra_mais_zero()
+    {
+        // −0,3% arredonda para 0: sem o arredondamento do veredito saía "-+0"
+        var vm = FpsGameVm.From(new("Counter-Strike 2", "cs2.exe", null, null,
+            Run(FpsRole.Before, 100, 50, T0), Run(FpsRole.After, 99.7, 50, T0.AddMinutes(5))));
+        Assert.Equal("Antes 100 → Depois 100 (+0%)", vm.PairText);
+    }
+
+    [Fact]
     public void Linha_do_jogo_sem_sessoes_nem_par_fica_vazia()
     {
         var vm = FpsGameVm.From(new("Counter-Strike 2", "cs2.exe", null, null, null, null));

@@ -20,7 +20,7 @@ public sealed record FpsGameVm(string Name, string LastText, string AvgText, str
         if (s.Before is { } b && s.After is { } a)
         {
             var c = FpsVerdict.Compare(b, a);
-            pair = Loc.T($"Antes {b.AvgFps:N0} → Depois {a.AvgFps:N0} ({c.AvgChangePct:+0;−0}%)") + (c.Outcome == FpsOutcome.Better ? " ✓" : "");
+            pair = Loc.T($"Antes {b.AvgFps:N0} → Depois {a.AvgFps:N0} ({FpsVerdict.Signed(c.AvgChangePct)}%)") + (c.Outcome == FpsOutcome.Better ? " ✓" : "");
         }
         return new(s.Game,
             s.Last is { } l ? Loc.T($"Última: {l.AvgFps:N0} FPS (1% {l.Low1Fps:N0})") : "",
@@ -103,7 +103,9 @@ public partial class MainWindow
         if (FrameStats.From(frames) is { } s)
         {
             FpsHistory.Add(FpsRun.From(g.Game.Name, g.Game.Exe, FpsRole.Session, s, DateTime.Now));
-            summary = Loc.T($"Sessão de {s.Seconds / 60:N0} min: {s.AvgFps:N0} FPS médios, 1% low {s.Low1Fps:N0}, {s.Stutters} engasgos.");
+            summary = s.Seconds < 60
+                ? Loc.T($"Sessão de {s.Seconds:N0} s: {s.AvgFps:N0} FPS médios, 1% low {s.Low1Fps:N0}, {s.Stutters} engasgos.")
+                : Loc.T($"Sessão de {s.Seconds / 60:N0} min: {s.AvgFps:N0} FPS médios, 1% low {s.Low1Fps:N0}, {s.Stutters} engasgos.");
         }
         RefreshFpsCard();
         return summary;
@@ -169,7 +171,7 @@ public partial class MainWindow
 
     // ------------------------------------------------------------------ teste guiado (Ctrl+Shift+F), veredito e desfazer
 
-    const int TestCountdown = 3, TestSeconds = 60;
+    const int TestCountdown = 3, TestSeconds = 60, TestWaitSeconds = 30;
     DispatcherTimer? _testTimer;
     /// <summary>Os ajustes que o "Desfazer esses ajustes" do último veredito reverte.</summary>
     List<ChangeEntry> _verdictTweaks = new();
@@ -178,20 +180,40 @@ public partial class MainWindow
 
     void TestFps_Click(object sender, RoutedEventArgs e) => StartFpsTest();
 
-    /// <summary>Contagem de 3 s e 60 s a medir. Sem jogo, sem acesso ou com um teste a decorrer, não faz nada.</summary>
+    /// <summary>
+    /// Contagem de 3 s e 60 s a medir. Sem jogo, sem acesso ou com um teste a decorrer, não faz nada. Pelo botão do
+    /// cartão a Rigwise está à frente: a contagem só começa com o jogo em primeiro plano (até 30 s à espera).
+    /// </summary>
     void StartFpsTest()
     {
         if (_testTimer != null || _game is not { } g || PerfLogAccess.Current != FpsAccess.Ready) return;
         FpsVerdictBox.Visibility = Visibility.Collapsed;
         var t = -TestCountdown; // negativo: contagem; de 0 a 60: a medir
-        ShowTestText(TestCountdown.ToString());
+        var waited = 0;
+        var holding = ForegroundPid() != g.Pid;
+        ShowTestText(holding ? Loc.T("Volta ao jogo para começar") : TestCountdown.ToString());
         _testTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _testTimer.Tick += (_, _) =>
         {
-            if (++t < 0) { ShowTestText((-t).ToString()); return; }
-            if (t == 0) lock (_fpsGate) _testFrames = new();
-            // Alt+Tab ou jogo fechado: o teste deixou de medir o mesmo sítio
-            if (_game?.Pid != g.Pid || ForegroundPid() != g.Pid) { InterruptFpsTest(); return; }
+            if (_game?.Pid != g.Pid) { InterruptFpsTest(); return; } // jogo fechado
+            var front = ForegroundPid() == g.Pid;
+            if (t < 0)
+            {
+                if (!front) // a contagem fica parada (e recomeça do 3) até o jogo voltar à frente
+                {
+                    if (++waited >= TestWaitSeconds) { InterruptFpsTest(); return; }
+                    t = -TestCountdown;
+                    holding = true;
+                    ShowTestText(Loc.T("Volta ao jogo para começar"));
+                    return;
+                }
+                if (holding) { holding = false; ShowTestText(TestCountdown.ToString()); return; }
+                if (++t < 0) { ShowTestText((-t).ToString()); return; }
+                lock (_fpsGate) _testFrames = new();
+            }
+            else t++;
+            // Alt+Tab: o teste deixou de medir o mesmo sítio
+            if (!front) { InterruptFpsTest(); return; }
             if (t < TestSeconds) ShowTestText(Loc.T($"A medir {TestSeconds - t} s · fica no mesmo sítio"));
             else FinishFpsTest(g);
         };
@@ -238,6 +260,12 @@ public partial class MainWindow
         var now = DateTime.Now;
         var before = FpsHistory.PendingBefore(g.Game.Exe);
         var role = FpsVerdict.NextTestRole(before, ChangeLog.All, now);
+        // o Depois mediria ajustes que ainda não fizeram efeito: não grava nada
+        if (role == FpsRole.After && RebootPending(before!, now))
+        {
+            FpsTestStatus.Text = RebootFirstText;
+            return;
+        }
         var run = FpsRun.From(g.Game.Name, g.Game.Exe, role, s, now);
         FpsHistory.Add(run);
         RefreshFpsCard();
@@ -255,23 +283,18 @@ public partial class MainWindow
         var c = FpsVerdict.Compare(before, after);
         _verdictTweaks = FpsVerdict.TweaksBetween(ChangeLog.All, before.When, after.When);
         _verdictAfter = after.When;
-        string avg = Signed(c.AvgChangePct), low = Signed(c.LowChangePct);
         FpsVerdictTitle.Text = c.Outcome switch { FpsOutcome.Better => "✓", FpsOutcome.Same => "=", FpsOutcome.Worse => "✗", _ => "±" } + "  " + after.Game;
-        FpsVerdictText.Text = c.Outcome switch
-        {
-            FpsOutcome.Better => Loc.T($"Melhorou: {avg}% FPS médios, 1% low {low}%."),
-            FpsOutcome.Same => Loc.T($"Sem diferença (±3% é a variação normal entre testes). Os {_verdictTweaks.Count} ajustes aplicados desde {before.When:dd/MM} não deram FPS neste jogo."),
-            FpsOutcome.Worse => Loc.T($"Piorou: {avg}% FPS médios."),
-            _ => Loc.T($"Resultado misto: {avg}% FPS médios, mas 1% low {low}% (mais engasgos)."),
-        } + (c.Cap is int cap ? " " + Loc.T($"Os FPS parecem limitados a {cap} (V-Sync ou limite do jogo): desliga o limite para o teste mostrar diferenças.") : "");
+        FpsVerdictText.Text = FpsVerdict.Text(c, _verdictTweaks.Count, before.When);
 
         var good = c.Outcome == FpsOutcome.Better; // as mesmas cores do veredito "Onde está o lag"
         FpsVerdictBox.Background = new SolidColorBrush(good ? Color.FromRgb(0x14, 0x2A, 0x1C) : Color.FromRgb(0x3A, 0x2A, 0x14));
         FpsVerdictBox.BorderBrush = new SolidColorBrush(good ? Color.FromRgb(0x23, 0x4A, 0x30) : Color.FromRgb(0x5A, 0x43, 0x20));
 
-        FpsUndoButton.Visibility = FpsKeepButton.Visibility = _verdictTweaks.Count > 0 && !good ? Visibility.Visible : Visibility.Collapsed;
-        // misto: Manter em primeiro; sem diferença ou pior: Desfazer em primeiro. O primeiro é o botão de destaque.
-        var keepFirst = c.Outcome == FpsOutcome.Mixed;
+        var undo = FpsVerdict.OffersUndo(c, _verdictTweaks.Count);
+        FpsUndoButton.Visibility = undo ? Visibility.Visible : Visibility.Collapsed;
+        FpsKeepButton.Visibility = _verdictTweaks.Count > 0 && !good ? Visibility.Visible : Visibility.Collapsed;
+        // misto ou FPS limitados (só Manter): Manter em primeiro; sem diferença ou pior: Desfazer em primeiro. O primeiro é o botão de destaque.
+        var keepFirst = c.Outcome == FpsOutcome.Mixed || !undo;
         var panel = (System.Windows.Controls.Panel)FpsKeepButton.Parent;
         panel.Children.Remove(FpsKeepButton);
         panel.Children.Insert(keepFirst ? 0 : 1, FpsKeepButton);
@@ -280,10 +303,6 @@ public partial class MainWindow
         FpsUndoButton.Style = keepFirst ? plain : primary;
         FpsVerdictBox.Visibility = Visibility.Visible;
     }
-
-    // arredonda para int antes: um double entre −0,5 e 0 sairia "-+0"
-    /// <summary>Variação em % com sinal, sem casas (N0), com o "−" tipográfico.</summary>
-    static string Signed(double pct) => ((int)Math.Round(pct, MidpointRounding.AwayFromZero)).ToString("+#,0;−#,0");
 
     async void FpsUndo_Click(object sender, RoutedEventArgs e)
     {
@@ -312,9 +331,20 @@ public partial class MainWindow
     /// <summary>Ao abrir um jogo com um Antes à espera e ajustes feitos depois dele.</summary>
     void RemindFpsTest(RunningGame g)
     {
-        if (FpsVerdict.NextTestRole(FpsHistory.PendingBefore(g.Game.Exe), ChangeLog.All, DateTime.Now) == FpsRole.After)
-            FpsTestStatus.Text = Loc.T("Repete o teste no mesmo sítio para ver se a otimização ajudou.");
+        var before = FpsHistory.PendingBefore(g.Game.Exe);
+        var now = DateTime.Now;
+        if (FpsVerdict.NextTestRole(before, ChangeLog.All, now) == FpsRole.After)
+            FpsTestStatus.Text = RebootPending(before!, now) ? RebootFirstText : Loc.T("Repete o teste no mesmo sítio para ver se a otimização ajudou.");
     }
+
+    static string RebootFirstText => Loc.T("Reinicia o PC antes do teste Depois: alguns ajustes só funcionam depois de reiniciar.");
+
+    /// <summary>Há ajustes desde o Antes que pedem reinício, feitos depois do último arranque do Windows.</summary>
+    static bool RebootPending(FpsRun before, DateTime now) =>
+        FpsVerdict.RebootPending(FpsVerdict.TweaksBetween(ChangeLog.All, before.When, now),
+            // um id que já não existe no catálogo (histórico antigo) não pede reinício; o Get lançaria dentro do temporizador
+            id => TweakCatalog.All.FirstOrDefault(t => t.Id == id)?.RequiresReboot ?? false,
+            DateTime.Now - TimeSpan.FromMilliseconds(Environment.TickCount64));
 
     static int ForegroundPid()
     {

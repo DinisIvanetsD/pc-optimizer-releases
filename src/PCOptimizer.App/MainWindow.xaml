@@ -1620,7 +1620,7 @@
                            Text="Mede os FPS de cada jogo e prova se as otimizações ajudaram."/>
                 <WrapPanel>
                   <Button x:Name="FpsAccessButton" Content="🔒  Ativar medição de FPS" Click="EnableFps_Click" Style="{StaticResource PrimaryButton}"/>
-                  <TextBlock x:Name="FpsAccessText" VerticalAlignment="Center" Margin="0,0,10,0" Style="{StaticResource Muted}"/>
+                  <TextBlock x:Name="FpsAccessText" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,10,0" Style="{StaticResource Muted}"/>
                   <Button x:Name="FpsTestButton" Content="⏱  Testar FPS" Click="TestFps_Click" Visibility="Collapsed"/>
                 </WrapPanel>
                 <TextBlock x:Name="FpsTestStatus" Style="{StaticResource Muted}" Margin="0,8,0,0"/>

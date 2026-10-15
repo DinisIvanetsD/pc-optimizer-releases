@@ -1,4 +1,5 @@
 using PCOptimizer.Core.History;
+using PCOptimizer.Core.Util;
 
 namespace PCOptimizer.Core.Benchmark;
 
@@ -59,6 +60,43 @@ public static class FpsVerdict
             if ((await ChangeLog.UndoAsync(e)).StartsWith('✓')) reverted++;
         return reverted;
     }
+
+    /// <summary>
+    /// O texto do veredito. Com os FPS presos a um limite o teste não mede os ajustes: avisa do limite em vez de dizer
+    /// que os ajustes não deram FPS.
+    /// </summary>
+    public static string Text(FpsComparison c, int tweakCount, DateTime since)
+    {
+        string avg = Signed(c.AvgChangePct), low = Signed(c.LowChangePct);
+        var text = c.Outcome switch
+        {
+            FpsOutcome.Better => Loc.T($"Melhorou: {avg}% FPS médios, 1% low {low}%."),
+            FpsOutcome.Same => Loc.T("Sem diferença (±3% é a variação normal entre testes).") + (c.Cap is not null ? "" : " " + (tweakCount == 1
+                ? Loc.T($"O ajuste aplicado desde {since:dd/MM} não deu FPS neste jogo.")
+                : Loc.T($"Os {tweakCount} ajustes aplicados desde {since:dd/MM} não deram FPS neste jogo."))),
+            FpsOutcome.Worse => Loc.T($"Piorou: {avg}% FPS médios, 1% low {low}%."),
+            // misto: um subiu e o outro desceu
+            _ => c.LowChangePct < 0
+                ? Loc.T($"Resultado misto: {avg}% FPS médios, mas 1% low {low}% (mais engasgos).")
+                : Loc.T($"Resultado misto: {avg}% FPS médios, mas 1% low {low}% (mais estável)."),
+        };
+        return text + (c.Cap is int cap ? " " + Loc.T($"Os FPS parecem limitados a {cap} (V-Sync ou limite do jogo): desliga o limite para o teste mostrar diferenças.") : "");
+    }
+
+    /// <summary>O Desfazer só aparece se os ajustes podem ter culpa: não melhorou e os FPS não estão presos a um limite.</summary>
+    public static bool OffersUndo(FpsComparison c, int tweakCount) =>
+        tweakCount > 0 && c.Outcome != FpsOutcome.Better && c.Cap is null;
+
+    /// <summary>
+    /// Algum dos ajustes desde o Antes só funciona depois de reiniciar e foi feito depois do último arranque: um Depois
+    /// agora mediria o PC sem ele.
+    /// </summary>
+    public static bool RebootPending(IEnumerable<ChangeEntry> tweaks, Func<string, bool> requiresReboot, DateTime bootTime) =>
+        tweaks.Any(e => e.When > bootTime && requiresReboot(e.Data["id"]));
+
+    // arredonda para int antes: um double entre −0,5 e 0 sairia "-+0"
+    /// <summary>Variação em % com sinal, sem casas (N0), com o "−" tipográfico.</summary>
+    public static string Signed(double pct) => ((int)Math.Round(pct, MidpointRounding.AwayFromZero)).ToString("+#,0;−#,0");
 
     static double ChangePct(double before, double after) => before > 0 ? (after - before) * 100 / before : 0;
 }

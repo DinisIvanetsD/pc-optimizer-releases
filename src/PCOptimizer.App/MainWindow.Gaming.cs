@@ -185,7 +185,6 @@ public partial class MainWindow
     async Task OnGameStoppedAsync(RunningGame g)
     {
         _prompt?.Close();
-        var fps = StopFps(g);
         _trafficTimer?.Stop();
         _live?.Dispose();
         _live = null;
@@ -193,8 +192,10 @@ public partial class MainWindow
         _traffic = null;
         _server = null;
         _game = null;
-        RefreshFpsCard(); // o do StopFps correu com _game ainda definido: reavalia o botão "Testar FPS"
         _overlay?.Hide();
+        // depois de esconder o overlay (fechar a sessão ETW pode demorar) e com _game já null: o RefreshFpsCard do
+        // StopFps esconde o botão "Testar FPS"
+        var fps = StopFps(g);
 
         GameTitle.Text = Loc.T("Nenhum jogo aberto.");
         GameBadgeText.Text = Loc.T("À espera de um jogo");

@@ -44,6 +44,46 @@ public class FpsHistoryTests : IDisposable
         Assert.Equal(expected, FpsVerdict.ShouldShow(outcome, tweaks, keptDaysFromAfter is int d ? after.AddDays(d) : null, after));
     }
 
+    static FpsComparison Cmp(double avgB, double lowB, double avgA, double lowA) =>
+        FpsVerdict.Compare(Run(FpsRole.Before, avgB, lowB, T0), Run(FpsRole.After, avgA, lowA, T0.AddHours(1)));
+
+    [Fact]
+    public void Texto_do_veredito_diz_o_que_mudou_mesmo()
+    {
+        Assert.Equal("Resultado misto: +6% FPS médios, mas 1% low −8% (mais engasgos).", FpsVerdict.Text(Cmp(100, 50, 106, 46), 2, T0));
+        Assert.Equal("Resultado misto: −6% FPS médios, mas 1% low +8% (mais estável).", FpsVerdict.Text(Cmp(100, 50, 94, 54), 2, T0));
+        Assert.Equal("Piorou: −7% FPS médios, 1% low +0%.", FpsVerdict.Text(Cmp(100, 50, 93, 50), 2, T0));
+        var one = FpsVerdict.Text(Cmp(100, 50, 101, 50), 1, T0);
+        Assert.StartsWith("Sem diferença (±3% é a variação normal entre testes). O ajuste aplicado desde ", one);
+        Assert.EndsWith(" não deu FPS neste jogo.", one);
+        Assert.Contains("Os 3 ajustes aplicados desde ", FpsVerdict.Text(Cmp(100, 50, 101, 50), 3, T0));
+    }
+
+    [Fact]
+    public void FPS_limitados_nao_culpam_os_ajustes_nem_oferecem_desfazer()
+    {
+        var capped = Cmp(59.8, 50, 60.1, 50);
+        Assert.Equal(FpsOutcome.Same, capped.Outcome);
+        Assert.Equal("Sem diferença (±3% é a variação normal entre testes). Os FPS parecem limitados a 60 (V-Sync ou limite do jogo): desliga o limite para o teste mostrar diferenças.",
+            FpsVerdict.Text(capped, 3, T0));
+        Assert.False(FpsVerdict.OffersUndo(capped, 3));
+        Assert.True(FpsVerdict.OffersUndo(Cmp(100, 50, 93, 50), 3));    // pior, sem limite
+        Assert.True(FpsVerdict.OffersUndo(Cmp(100, 50, 101, 50), 1));   // sem diferença, sem limite
+        Assert.False(FpsVerdict.OffersUndo(Cmp(100, 50, 111, 57.5), 3)); // melhorou
+        Assert.False(FpsVerdict.OffersUndo(Cmp(100, 50, 93, 50), 0));   // nada para desfazer
+    }
+
+    [Fact]
+    public void Depois_espera_pelo_reinicio_so_com_ajustes_que_o_pedem_feitos_depois_do_arranque()
+    {
+        var boot = T0.AddMinutes(30);
+        Func<string, bool> reboot = id => id == "game.hags";
+        Assert.True(FpsVerdict.RebootPending(new[] { Tweak("game.dvr_off", T0.AddMinutes(40)), Tweak("game.hags", T0.AddMinutes(40)) }, reboot, boot));
+        Assert.False(FpsVerdict.RebootPending(new[] { Tweak("game.hags", T0.AddMinutes(10)) }, reboot, boot));   // já reiniciou depois
+        Assert.False(FpsVerdict.RebootPending(new[] { Tweak("game.dvr_off", T0.AddMinutes(40)) }, reboot, boot)); // não pede reinício
+        Assert.False(FpsVerdict.RebootPending(Array.Empty<ChangeEntry>(), reboot, boot));
+    }
+
     [Fact]
     public void FPS_limitados_sao_avisados()
     {
